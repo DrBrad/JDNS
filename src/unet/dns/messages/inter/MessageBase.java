@@ -2,6 +2,7 @@ package unet.dns.messages.inter;
 
 import unet.dns.utils.AddressRecord;
 import unet.dns.utils.DnsQuery;
+import unet.dns.utils.DomainUtils;
 import unet.dns.utils.NameRecord;
 import unet.dns.utils.inter.DnsRecord;
 
@@ -126,7 +127,7 @@ public class MessageBase {
                     byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
                     System.arraycopy(buf, offset+12, addr, 0, addr.length);
 
-                    System.out.println(type+"  "+dnsClass+"  "+ttl+"  "+new String(addr));
+                    //System.out.println(type+"  "+dnsClass+"  "+ttl+"  "+new String(addr));
 
                     DnsRecord record;
 
@@ -136,10 +137,18 @@ public class MessageBase {
                             record = new AddressRecord(addr, type, dnsClass, ttl);
                             break;
 
+                        case MX:
                         case NS: //USES DOMAIN
                         case SOA: //USES DOMAIN
+                            System.err.println("MX  "+new String(addr)+"  "+ DomainUtils.unpackDomain(addr).length());
                             record = new NameRecord(addr, type, dnsClass, ttl);
                             break;
+
+                        case TXT:
+                            //MX  IN  1262   �.
+                            //TXT  IN  300  v=spf1 redirect=_spf.google.com
+                            System.out.println("TXT RECORD");
+                            return;
 
                         default:
                             return;

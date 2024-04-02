@@ -19,8 +19,8 @@ public class Resolver {
     public static final int DNS_SERVER_PORT = 53;
 
     public Resolver(String query)throws IOException {
-        InetAddress ipAddress = InetAddress.getByName("elisabeth.ns.cloudflare.com");
-        //InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
+        //InetAddress ipAddress = InetAddress.getByName("elisabeth.ns.cloudflare.com");
+        InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
 
 
         Random random = new Random();
@@ -29,7 +29,7 @@ public class Resolver {
         //request.setQuery(query);
 
         //request.setOpCode(OpCodes.IQUERY);
-        request.addQuery(new DnsQuery(query, Types.CAA, DnsClass.IN));
+        request.addQuery(new DnsQuery(query, Types.MX, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery("google.com", Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
