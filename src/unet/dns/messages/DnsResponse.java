@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static unet.dns.utils.DomainUtils.unpackDomain;
+
 public class DnsResponse extends MessageBase {
 
     private List<DnsRecord> records;
@@ -31,6 +33,51 @@ public class DnsResponse extends MessageBase {
     public void decode(byte[] buf){
         super.decode(buf);
 
+        int anCount = ((buf[6] & 0xFF) << 8) | (buf[7] & 0xFF);
+        int offset = length+12;
+
+        for(int i = 0; i < anCount; i++){
+            switch((buf[offset] & 0b11000000) >>> 6){
+                case 3:
+                    Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+                    DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
+
+                    int ttl = (((buf[offset+6] & 0xff) << 24) |
+                            ((buf[offset+7] & 0xff) << 16) |
+                            ((buf[offset+8] & 0xff) << 8) |
+                            (buf[offset+9] & 0xff));
+
+                    //String d = unpackDomain(buf, offset+12);
+                    //System.out.println(d);
+                    byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
+                    System.arraycopy(buf, offset+12, addr, 0, addr.length);
+
+                    DnsRecord record;
+
+                    switch(type){
+                        case A:
+                            record = new ARecord(addr, dnsClass, ttl);
+                            break;
+
+                        case NS:
+                            record = new NSRecord(addr, dnsClass, ttl);
+                            break;
+
+                        default:
+                            return;
+                    }
+
+                    offset += addr.length+12;
+                    records.add(record);
+
+                    break;
+
+                case 0:
+                    offset++;
+                    break;
+            }
+        }
         /*
         System.out.println(qdCount+"  "+anCount);
 

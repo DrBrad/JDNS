@@ -76,4 +76,9 @@ public class DnsQuery {
     public DnsClass getDnsClass(){
         return dnsClass;
     }
+
+    @Override
+    public String toString(){
+        return "TYPE: "+type+"\r\nCLASS: "+dnsClass+"\r\nQUERY: "+query;
+    }
 }

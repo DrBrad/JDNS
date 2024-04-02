@@ -3,6 +3,8 @@ package unet.dns.messages.inter;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.inter.DnsRecord;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,10 +14,8 @@ import static unet.dns.utils.DomainUtils.unpackDomain;
 public class MessageBase {
 
     protected int id;
-    protected String query;
-    protected Types type = Types.A;
+    //protected String query;
     protected OpCodes opCode = OpCodes.QUERY;
-    protected DnsClass dnsClass = DnsClass.IN;
     protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     protected boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
@@ -32,7 +32,7 @@ public class MessageBase {
     }
 
     public byte[] encode(){
-        byte[] buf = new byte[getLength()];
+        byte[] buf = new byte[12+length];
         buf[0] = (byte) (id >> 8); // First 8 bits
         buf[1] = (byte) id; // Second 8 bits
 
@@ -98,32 +98,14 @@ public class MessageBase {
             String domainName = unpackDomain(buf, offset);
             offset += domainName.length()+2;
 
-            type = Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF));
-            dnsClass = DnsClass.getClassFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-            System.out.println("DECODE: "+domainName +"  "+type+"  "+dnsClass);
+            Types type = Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF));
+            DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
 
             queries.add(new DnsQuery(domainName, type, dnsClass));
 
             offset += 4;
+            length += domainName.length()+6;
         }
-
-        for(int i = 0; i < anCount; i++){
-            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-            DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
-
-            int ttl = (((buf[offset+6] & 0xff) << 24) |
-                    ((buf[offset+7] & 0xff) << 16) |
-                    ((buf[offset+8] & 0xff) << 8) |
-                    (buf[offset+9] & 0xff));
-
-            System.out.println(type+"  "+dnsClass+"  "+ttl);
-        }
-    }
-
-    public int getLength(){
-        return 12+length;
     }
 
     public void setID(int id){
@@ -132,30 +114,6 @@ public class MessageBase {
 
     public int getID(){
         return id;
-    }
-
-    public void setQuery(String query){
-        this.query = query;
-    }
-
-    public String getQuery(){
-        return query;
-    }
-
-    public void setType(Types type){
-        this.type = type;
-    }
-
-    public Types getType(){
-        return type;
-    }
-
-    public void setDnsClass(DnsClass dnsClass){
-        this.dnsClass = dnsClass;
-    }
-
-    public DnsClass getDnsClass(){
-        return dnsClass;
     }
 
     public void setOpCode(OpCodes opCode){
@@ -213,6 +171,10 @@ public class MessageBase {
     public void addQuery(DnsQuery query){
         length += query.getLength();
         queries.add(query);
+    }
+
+    public List<DnsQuery> getQueries(){
+        return queries;
     }
 
     /*

@@ -64,9 +64,4 @@ public class DnsRequest extends MessageBase {
     @Override
     public void decode(byte[] buf){
     }
-
-    @Override
-    public int getLength(){
-        return super.getLength();//+length;
-    }
 }

@@ -3,6 +3,7 @@ package unet.dns;
 import unet.dns.messages.DnsRequest;
 import unet.dns.messages.DnsResponse;
 import unet.dns.messages.inter.DnsClass;
+import unet.dns.messages.inter.OpCodes;
 import unet.dns.messages.inter.Types;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.inter.DnsRecord;
@@ -27,6 +28,7 @@ public class Resolver {
         DnsRequest request = new DnsRequest(id);
         //request.setQuery(query);
 
+        //request.addQuery(new DnsQuery(query, Types.NS, DnsClass.IN));
         request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
 
 
@@ -42,7 +44,7 @@ public class Resolver {
         socket.send(dnsReqPacket);
 
 
-        System.out.println(id);
+        //System.out.println(id);
 
 
         buf = new byte[1024];
@@ -56,7 +58,16 @@ public class Resolver {
 
         //System.err.println("A: "+packet.getLength());
         //System.out.println("A: "+response.getQuery());
-        System.out.println("A: "+response.getResponseCode());
+        //System.out.println("A: "+response.getResponseCode());
+        for(DnsQuery q : response.getQueries()){
+            System.out.println(q);
+            System.out.println();
+        }
+
+        System.out.println();
+        System.out.println();
+        System.out.println();
+
         for(DnsRecord record : response.getRecords()){
             System.out.println(record);
             System.out.println();
