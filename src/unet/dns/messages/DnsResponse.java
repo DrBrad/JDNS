@@ -2,6 +2,7 @@ package unet.dns.messages;
 
 import unet.dns.messages.inter.*;
 import unet.dns.utils.ARecord;
+import unet.dns.utils.DnsQuery;
 import unet.dns.utils.NSRecord;
 import unet.dns.utils.inter.DnsRecord;
 
@@ -16,6 +17,7 @@ public class DnsResponse extends MessageBase {
     private List<DnsRecord> records;
 
     public DnsResponse(int id){
+        super();
         this.id = id;
         records = new ArrayList<>();
     }
@@ -29,9 +31,26 @@ public class DnsResponse extends MessageBase {
     public void decode(byte[] buf){
         super.decode(buf);
 
+        /*
+        System.out.println(qdCount+"  "+anCount);
+
+        int offset = 12;
+
+
+        for(int i = 0; i < qdCount; i++){
+            String domainName = parseDomainName(buf, offset);
+            type = Types.getTypeFromCode(((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF));
+            dnsClass = DnsClass.getClassFromCode(((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF));
+            System.out.println("R: "+domainName);
+
+            queries.add(new DnsQuery(domainName, type, dnsClass));
+        }
+
         //QNAME
+        /*
         StringBuilder builder = new StringBuilder();
         builder.append(new String(buf, 13, buf[12]));
+
 
         int offset = buf[12]+13;
 
@@ -46,9 +65,11 @@ public class DnsResponse extends MessageBase {
         dnsClass = DnsClass.getClassFromCode(((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF));
 
         offset += 5;
+        */
 
         //System.out.println(new String(buf, offset, buf.length-offset));
 
+        /*
         for(int i = 0; i < anCount; i++){
             //System.out.println(buf[offset]);
             switch((buf[offset] & 0b11000000) >>> 6){
@@ -65,10 +86,6 @@ public class DnsResponse extends MessageBase {
                             (buf[offset+9] & 0xff));
 
                     offset += 10;
-                    //byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
-                    //System.out.println(addr.length);
-                    //System.arraycopy(buf, offset+12, addr, 0, addr.length);
-                    //System.out.println(new String(addr));
 
                     byte[] addr = new byte[((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF)];
                     System.arraycopy(buf, offset+2, addr, 0, addr.length);
@@ -98,7 +115,7 @@ public class DnsResponse extends MessageBase {
                     offset++;
                     break;
             }
-        }
+        }*/
 
         //System.out.println(offset);
     }

@@ -2,7 +2,9 @@ package unet.dns;
 
 import unet.dns.messages.DnsRequest;
 import unet.dns.messages.DnsResponse;
+import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
+import unet.dns.utils.DnsQuery;
 import unet.dns.utils.inter.DnsRecord;
 
 import java.io.IOException;
@@ -23,7 +25,10 @@ public class Resolver {
         Random random = new Random();
         int id = random.nextInt(32767);
         DnsRequest request = new DnsRequest(id);
-        request.setQuery(query);
+        //request.setQuery(query);
+
+        request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
+
 
         //request.setOpCode(OpCodes.IQUERY);
         //request.setType(Types.PTR);
@@ -49,9 +54,9 @@ public class Resolver {
         DnsResponse response = new DnsResponse(id);
         response.decode(buf);
 
-        //System.err.println(packet.getLength());
-        //System.out.println(response.getQuery());
-        //System.out.println(response.getResponseCode());
+        //System.err.println("A: "+packet.getLength());
+        //System.out.println("A: "+response.getQuery());
+        System.out.println("A: "+response.getResponseCode());
         for(DnsRecord record : response.getRecords()){
             System.out.println(record);
             System.out.println();

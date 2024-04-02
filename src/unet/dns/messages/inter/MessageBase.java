@@ -1,5 +1,14 @@
 package unet.dns.messages.inter;
 
+import unet.dns.utils.DnsQuery;
+import unet.dns.utils.inter.DnsRecord;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static unet.dns.utils.DomainUtils.unpackDomain;
+
 public class MessageBase {
 
     protected int id;
@@ -10,9 +19,17 @@ public class MessageBase {
     protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     protected boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
-    protected int qdCount, anCount, nsCount, arCount;
+    protected int /*qdCount, anCount, */nsCount, arCount, length;
     //QDCOUNT = Question count
     //ANCOUNT = Answer Count
+
+    protected List<DnsQuery> queries;
+    private List<DnsRecord> answers;
+
+    public MessageBase(){
+        queries = new ArrayList<>();
+        answers = new ArrayList<>();
+    }
 
     public byte[] encode(){
         byte[] buf = new byte[getLength()];
@@ -34,12 +51,12 @@ public class MessageBase {
         buf[3] = (byte) flags; // Second 8 bits
 
         // QDCOUNT (16 bits)
-        buf[4] = (byte) (qdCount >> 8);
-        buf[5] = (byte) qdCount;
+        buf[4] = (byte) (queries.size() >> 8);
+        buf[5] = (byte) queries.size();
 
         // ANCOUNT (16 bits)
-        buf[6] = (byte) (anCount >> 8);
-        buf[7] = (byte) anCount;
+        buf[6] = (byte) (answers.size() >> 8);
+        buf[7] = (byte) answers.size();
 
         // NSCOUNT (16 bits)
         buf[8] = (byte) (nsCount >> 8);
@@ -48,6 +65,14 @@ public class MessageBase {
         // ARCOUNT (16 bits)
         buf[10] = (byte) (arCount >> 8);
         buf[11] = (byte) arCount;
+
+        int offset = 12;
+
+        for(DnsQuery query : queries){
+            byte[] q = query.encode();
+            System.arraycopy(q, 0, buf, offset, q.length);
+            offset += q.length;
+        }
 
         return buf;
     }
@@ -62,14 +87,43 @@ public class MessageBase {
         int z = (buf[3] >> 4) & 0x3;
         responseCode = ResponseCodes.getResponseCodeFromCode(buf[3] & 0xF);
 
-        qdCount = ((buf[4] & 0xFF) << 8) | (buf[5] & 0xFF);
-        anCount = ((buf[6] & 0xFF) << 8) | (buf[7] & 0xFF);
+        int qdCount = ((buf[4] & 0xFF) << 8) | (buf[5] & 0xFF);
+        int anCount = ((buf[6] & 0xFF) << 8) | (buf[7] & 0xFF);
         nsCount = ((buf[8] & 0xFF) << 8) | (buf[9] & 0xFF);
         arCount = ((buf[10] & 0xFF) << 8) | (buf[11] & 0xFF);
+
+        int offset = 12;
+
+        for(int i = 0; i < qdCount; i++){
+            String domainName = unpackDomain(buf, offset);
+            offset += domainName.length()+2;
+
+            type = Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF));
+            dnsClass = DnsClass.getClassFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+            System.out.println("DECODE: "+domainName +"  "+type+"  "+dnsClass);
+
+            queries.add(new DnsQuery(domainName, type, dnsClass));
+
+            offset += 4;
+        }
+
+        for(int i = 0; i < anCount; i++){
+            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+            DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
+
+            int ttl = (((buf[offset+6] & 0xff) << 24) |
+                    ((buf[offset+7] & 0xff) << 16) |
+                    ((buf[offset+8] & 0xff) << 8) |
+                    (buf[offset+9] & 0xff));
+
+            System.out.println(type+"  "+dnsClass+"  "+ttl);
+        }
     }
 
     public int getLength(){
-        return 12;
+        return 12+length;
     }
 
     public void setID(int id){
@@ -152,14 +206,16 @@ public class MessageBase {
         return responseCode;
     }
 
-    public void setQdCount(int qdCount){
-        this.qdCount = qdCount;
+    public int totalQueries(){
+        return queries.size();
     }
 
-    public int getQdCount(){
-        return qdCount;
+    public void addQuery(DnsQuery query){
+        length += query.getLength();
+        queries.add(query);
     }
 
+    /*
     public void setAnCount(int anCount){
         this.anCount = anCount;
     }
@@ -183,4 +239,5 @@ public class MessageBase {
     public int getArCount(){
         return arCount;
     }
+    */
 }

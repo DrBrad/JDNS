@@ -1,26 +1,40 @@
 package unet.dns.messages;
 
 import unet.dns.messages.inter.MessageBase;
+import unet.dns.utils.DnsQuery;
 
 import java.nio.charset.StandardCharsets;
 
 public class DnsRequest extends MessageBase {
 
     public DnsRequest(){
+        super();
     }
 
     public DnsRequest(int id){
+        super();
         this.id = id;
-        qdCount = 1;
+        //qdCount = 1;
         recursionDesired = true;
     }
 
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
+        return buf;
 
+        /*
         int offset = 12;
 
+        for(DnsQuery query : queries){
+            byte[] q = query.encode();
+            System.arraycopy(q, 0, buf, offset, q.length);
+            offset += q.length;
+        }
+
+        return buf;
+
+/*
         for(String part : query.split("\\.")){
             byte[] domainBytes = part.getBytes(StandardCharsets.UTF_8);
             buf[offset] = (byte) domainBytes.length;
@@ -44,7 +58,7 @@ public class DnsRequest extends MessageBase {
         byte[] truncatedFrame = new byte[offset+5];
         System.arraycopy(buf, 0, truncatedFrame, 0, offset+5);
 
-        return truncatedFrame;
+        return truncatedFrame;*/
     }
 
     @Override
@@ -53,6 +67,6 @@ public class DnsRequest extends MessageBase {
 
     @Override
     public int getLength(){
-        return super.getLength()+query.getBytes().length+6;
+        return super.getLength();//+length;
     }
 }
