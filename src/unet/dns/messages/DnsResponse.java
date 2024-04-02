@@ -1,27 +1,17 @@
 package unet.dns.messages;
 
 import unet.dns.messages.inter.*;
-import unet.dns.utils.ARecord;
-import unet.dns.utils.DnsQuery;
-import unet.dns.utils.NSRecord;
-import unet.dns.utils.inter.DnsRecord;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static unet.dns.utils.DomainUtils.unpackDomain;
 
 public class DnsResponse extends MessageBase {
 
-    private List<DnsRecord> records;
+    //private List<DnsRecord> records;
 
     public DnsResponse(int id){
         super();
         this.id = id;
-        records = new ArrayList<>();
+        //records = new ArrayList<>();
     }
 
     @Override
@@ -33,6 +23,7 @@ public class DnsResponse extends MessageBase {
     public void decode(byte[] buf){
         super.decode(buf);
 
+        /*
         int anCount = ((buf[6] & 0xFF) << 8) | (buf[7] & 0xFF);
         int offset = length+12;
 
@@ -48,19 +39,22 @@ public class DnsResponse extends MessageBase {
                             ((buf[offset+8] & 0xff) << 8) |
                             (buf[offset+9] & 0xff));
 
-                    //String d = unpackDomain(buf, offset+12);
-                    //System.out.println(d);
                     byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
                     System.arraycopy(buf, offset+12, addr, 0, addr.length);
 
                     DnsRecord record;
 
                     switch(type){
-                        case A:
+                        case A: //USES ADDR
                             record = new ARecord(addr, dnsClass, ttl);
                             break;
 
-                        case NS:
+                        case AAAA: //USES ADDR
+                            record = new AAAARecord(addr, dnsClass, ttl);
+                            break;
+
+                        case NS: //USES DOMAIN
+                        case SOA: //USES DOMAIN
                             record = new NSRecord(addr, dnsClass, ttl);
                             break;
 
@@ -76,8 +70,8 @@ public class DnsResponse extends MessageBase {
                 case 0:
                     offset++;
                     break;
-            }
-        }
+            }*/
+        //}
         /*
         System.out.println(qdCount+"  "+anCount);
 
@@ -167,6 +161,7 @@ public class DnsResponse extends MessageBase {
         //System.out.println(offset);
     }
 
+    /*
     public boolean containsRecord(DnsRecord record){
         return records.contains(record);
     }
@@ -185,5 +180,5 @@ public class DnsResponse extends MessageBase {
 
     public int totalRecords(){
         return records.size();
-    }
+    }*/
 }

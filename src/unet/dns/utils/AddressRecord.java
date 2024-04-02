@@ -7,12 +7,12 @@ import unet.dns.utils.inter.DnsRecord;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class ARecord extends DnsRecord {
+public class AddressRecord extends DnsRecord {
 
     private InetAddress address;
 
-    public ARecord(byte[] addr, DnsClass dnsClass, int ttl){
-        super(Types.A, dnsClass, ttl);
+    public AddressRecord(byte[] addr, Types type, DnsClass dnsClass, int ttl){
+        super(type, dnsClass, ttl);
         try{
             address = InetAddress.getByAddress(addr);
         }catch(UnknownHostException e){
@@ -20,8 +20,8 @@ public class ARecord extends DnsRecord {
         }
     }
 
-    public ARecord(InetAddress address, DnsClass dnsClass, int ttl){
-        super(Types.A, dnsClass, ttl);
+    public AddressRecord(InetAddress address, Types type, DnsClass dnsClass, int ttl){
+        super(type, dnsClass, ttl);
         this.address = address;
     }
 

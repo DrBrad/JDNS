@@ -22,10 +22,10 @@ public class DnsQuery {
         int offset = 0;
 
         for(String part : query.split("\\.")){
-            byte[] domainBytes = part.getBytes(StandardCharsets.UTF_8);
-            buf[offset] = (byte) domainBytes.length;
-            System.arraycopy(domainBytes, 0, buf, offset+1, domainBytes.length);
-            offset += domainBytes.length+1;
+            byte[] addr = part.getBytes();
+            buf[offset] = (byte) addr.length;
+            System.arraycopy(addr, 0, buf, offset+1, addr.length);
+            offset += addr.length+1;
         }
 
         // End of domain name (null)

@@ -19,7 +19,7 @@ public class Resolver {
     public static final int DNS_SERVER_PORT = 53;
 
     public Resolver(String query)throws IOException {
-        InetAddress ipAddress = InetAddress.getByName("1.1.1.1");
+        InetAddress ipAddress = InetAddress.getByName("elisabeth.ns.cloudflare.com");
         //InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
 
 
@@ -28,8 +28,11 @@ public class Resolver {
         DnsRequest request = new DnsRequest(id);
         //request.setQuery(query);
 
-        //request.addQuery(new DnsQuery(query, Types.NS, DnsClass.IN));
-        request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
+        //request.setOpCode(OpCodes.IQUERY);
+        request.addQuery(new DnsQuery(query, Types.CAA, DnsClass.IN));
+        //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
+        //request.addQuery(new DnsQuery("google.com", Types.A, DnsClass.IN));
+        //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
 
 
         //request.setOpCode(OpCodes.IQUERY);
@@ -59,16 +62,29 @@ public class Resolver {
         //System.err.println("A: "+packet.getLength());
         //System.out.println("A: "+response.getQuery());
         //System.out.println("A: "+response.getResponseCode());
+        System.out.println(response.getResponseCode());
+        System.out.println(response.isAuthoritative());
+        System.out.println("QUERIES");
+        System.out.println();
         for(DnsQuery q : response.getQueries()){
             System.out.println(q);
             System.out.println();
         }
 
         System.out.println();
-        System.out.println();
+        System.out.println("ANSWERS");
         System.out.println();
 
-        for(DnsRecord record : response.getRecords()){
+        for(DnsRecord record : response.getAnswers()){
+            System.out.println(record);
+            System.out.println();
+        }
+
+        System.out.println();
+        System.out.println("NAME SERVERS");
+        System.out.println();
+
+        for(DnsRecord record : response.getNameServers()){
             System.out.println(record);
             System.out.println();
         }

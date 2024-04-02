@@ -1,12 +1,11 @@
 package unet.dns.messages.inter;
 
+import unet.dns.utils.AddressRecord;
 import unet.dns.utils.DnsQuery;
+import unet.dns.utils.NameRecord;
 import unet.dns.utils.inter.DnsRecord;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static unet.dns.utils.DomainUtils.unpackDomain;
@@ -19,16 +18,18 @@ public class MessageBase {
     protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     protected boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
-    protected int /*qdCount, anCount, */nsCount, arCount, length;
+    protected int length;
     //QDCOUNT = Question count
     //ANCOUNT = Answer Count
 
     protected List<DnsQuery> queries;
-    private List<DnsRecord> answers;
+    private List<DnsRecord> answers, nameServers, additionalRecords;
 
     public MessageBase(){
         queries = new ArrayList<>();
         answers = new ArrayList<>();
+        nameServers = new ArrayList<>();
+        additionalRecords = new ArrayList<>();
     }
 
     public byte[] encode(){
@@ -59,12 +60,12 @@ public class MessageBase {
         buf[7] = (byte) answers.size();
 
         // NSCOUNT (16 bits)
-        buf[8] = (byte) (nsCount >> 8);
-        buf[9] = (byte) nsCount;
+        buf[8] = (byte) (nameServers.size() >> 8);
+        buf[9] = (byte) nameServers.size();
 
         // ARCOUNT (16 bits)
-        buf[10] = (byte) (arCount >> 8);
-        buf[11] = (byte) arCount;
+        buf[10] = (byte) (additionalRecords.size() >> 8);
+        buf[11] = (byte) additionalRecords.size();
 
         int offset = 12;
 
@@ -89,8 +90,10 @@ public class MessageBase {
 
         int qdCount = ((buf[4] & 0xFF) << 8) | (buf[5] & 0xFF);
         int anCount = ((buf[6] & 0xFF) << 8) | (buf[7] & 0xFF);
-        nsCount = ((buf[8] & 0xFF) << 8) | (buf[9] & 0xFF);
-        arCount = ((buf[10] & 0xFF) << 8) | (buf[11] & 0xFF);
+        int nsCount = ((buf[8] & 0xFF) << 8) | (buf[9] & 0xFF);
+        int arCount = ((buf[10] & 0xFF) << 8) | (buf[11] & 0xFF);
+
+        System.out.println(qdCount+"  "+anCount+"  "+nsCount+"  "+arCount);
 
         int offset = 12;
 
@@ -105,6 +108,96 @@ public class MessageBase {
 
             offset += 4;
             length += domainName.length()+6;
+        }
+
+
+        for(int i = 0; i < anCount; i++){
+            switch((buf[offset] & 0b11000000) >>> 6){
+                case 3:
+                    Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+                    DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
+
+                    int ttl = (((buf[offset+6] & 0xff) << 24) |
+                            ((buf[offset+7] & 0xff) << 16) |
+                            ((buf[offset+8] & 0xff) << 8) |
+                            (buf[offset+9] & 0xff));
+
+                    byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
+                    System.arraycopy(buf, offset+12, addr, 0, addr.length);
+
+                    System.out.println(type+"  "+dnsClass+"  "+ttl+"  "+new String(addr));
+
+                    DnsRecord record;
+
+                    switch(type){
+                        case A: //USES ADDR
+                        case AAAA: //USES ADDR
+                            record = new AddressRecord(addr, type, dnsClass, ttl);
+                            break;
+
+                        case NS: //USES DOMAIN
+                        case SOA: //USES DOMAIN
+                            record = new NameRecord(addr, type, dnsClass, ttl);
+                            break;
+
+                        default:
+                            return;
+                    }
+
+                    offset += addr.length+12;
+                    answers.add(record);
+
+                    break;
+
+                case 0:
+                    offset++;
+                    break;
+            }
+        }
+
+
+        for(int i = 0; i < nsCount; i++){
+            switch((buf[offset] & 0b11000000) >>> 6){
+                case 3:
+                    Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+                    DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
+
+                    int ttl = (((buf[offset+6] & 0xff) << 24) |
+                            ((buf[offset+7] & 0xff) << 16) |
+                            ((buf[offset+8] & 0xff) << 8) |
+                            (buf[offset+9] & 0xff));
+
+                    byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
+                    System.arraycopy(buf, offset+12, addr, 0, addr.length);
+
+                    DnsRecord record;
+
+                    switch(type){
+                        case A: //USES ADDR
+                        case AAAA: //USES ADDR
+                            record = new AddressRecord(addr, type, dnsClass, ttl);
+                            break;
+
+                        case NS: //USES DOMAIN
+                        case SOA: //USES DOMAIN
+                            record = new NameRecord(addr, type, dnsClass, ttl);
+                            break;
+
+                        default:
+                            return;
+                    }
+
+                    offset += addr.length+12;
+                    nameServers.add(record);
+
+                    break;
+
+                case 0:
+                    offset++;
+                    break;
+            }
         }
     }
 
@@ -175,6 +268,18 @@ public class MessageBase {
 
     public List<DnsQuery> getQueries(){
         return queries;
+    }
+
+    public List<DnsRecord> getAnswers(){
+        return answers;
+    }
+
+    public List<DnsRecord> getNameServers(){
+        return nameServers;
+    }
+
+    public List<DnsRecord> getAdditionalRecords(){
+        return additionalRecords;
     }
 
     /*

@@ -4,34 +4,53 @@ import java.util.Arrays;
 
 public class DomainUtils {
 
-    public static String unpackDomain(byte[] buf, int off) {
-        StringBuilder domainName = new StringBuilder();
+    public static byte[] packDomain(String domain){
+        byte[] buf = new byte[domain.length()];
 
-        // Parse each label in the domain name
-        while (true) {
-            int labelLength = buf[off++];
+        int offset = 0;
+        for(String part : domain.split("\\.")){
+            byte[] addr = part.getBytes();
+            buf[offset] = (byte) addr.length;
+            System.arraycopy(addr, 0, buf, offset+1, addr.length);
+            offset += addr.length+1;
+        }
 
-            if (labelLength == 0) {
-                // End of domain name
+        // End of domain name (null)
+        buf[offset] = 0x00;
+
+        return buf;
+    }
+
+    public static String unpackDomain(byte[] addr){
+        return unpackDomain(addr, 0);
+    }
+
+    public static String unpackDomain(byte[] addr, int off){
+        StringBuilder builder = new StringBuilder();
+
+        int i = off;
+        while(i < addr.length){
+            int length = addr[i++];
+
+            if(length == 0){
                 break;
             }
 
-            if (domainName.length() > 0) {
-                domainName.append(".");
+            if(builder.length() > 0){
+                builder.append(".");
             }
 
-            if ((labelLength & 0xC0) == 0xC0) {
-                // Compression pointer
-                int pointer = ((labelLength & 0x3F) << 8) | (buf[off++] & 0xFF);
-                off = pointer;
-            } else {
-                // Normal label
-                byte[] labelBytes = Arrays.copyOfRange(buf, off, off + labelLength);
-                domainName.append(new String(labelBytes));
-                off += labelLength;
+            if((length & 0xc0) == 0xc0){
+                i = ((length & 0x3f) << 8) | (addr[i++] & 0xff);
+
+            }else{
+                byte[] label = new byte[length];
+                System.arraycopy(addr, i, label, 0, length);
+                builder.append(new String(label));
+                i += length;
             }
         }
 
-        return domainName.toString();
+        return builder.toString();
     }
 }
