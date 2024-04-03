@@ -168,7 +168,7 @@ public class MessageBase {
                 return new MXRecord();
 
             case TXT:
-                return null;
+                return new TXTRecord();
 
             case SRV:
                 return null;
