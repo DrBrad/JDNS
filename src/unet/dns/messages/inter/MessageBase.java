@@ -1,6 +1,7 @@
 package unet.dns.messages.inter;
 
 import unet.dns.utils.*;
+import unet.dns.utils.inter.DnsQuery;
 import unet.dns.utils.inter.DnsRecord;
 
 import java.util.ArrayList;
@@ -116,40 +117,36 @@ public class MessageBase {
             query.decode(buf, offset);
             queries.add(query);
             offset += query.getLength();
+            //System.out.println(query);
         }
 
-
-        //System.out.println(((buf[offset] & 0b11000000) >>> 6)+"  "+new String(buf, offset, buf.length-offset));
-
         for(int i = 0; i < anCount; i++){
-            DnsRecord record = RecordUtils.unpackRecord(buf, offset);
+            int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
+            //System.out.println(pointer);
+            DnsRecord record = new DnsRecord();
+            record.decode(buf, offset+2);
             answers.add(record);
-            offset += record.getLength()+1;
+            offset += record.getLength()+2;
         }
 
         for(int i = 0; i < nsCount; i++){
-            DnsRecord record = RecordUtils.unpackRecord(buf, offset);
+            int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
+            //System.out.println(pointer);
+            DnsRecord record = new DnsRecord();
+            record.decode(buf, offset+2);
             nameServers.add(record);
-            offset += record.getLength()+1;
+            offset += record.getLength()+2;
         }
 
         for(int i = 0; i < arCount; i++){
-            DnsRecord record = RecordUtils.unpackRecord(buf, offset);
+            int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
+            //System.out.println(pointer);
+            DnsRecord record = new DnsRecord();
+            record.decode(buf, offset+2);
             additionalRecords.add(record);
-            offset += record.getLength()+1;
+            offset += record.getLength()+2;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
     public void setID(int id){
         this.id = id;

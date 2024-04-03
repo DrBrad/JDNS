@@ -1,4 +1,4 @@
-package unet.dns.utils;
+package unet.dns.utils.inter;
 
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;

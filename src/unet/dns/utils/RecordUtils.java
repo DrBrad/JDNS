@@ -1,5 +1,7 @@
 package unet.dns.utils;
 
+import unet.dns.OLD.AddressRecord;
+import unet.dns.OLD.NameRecord;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.utils.inter.DnsRecord;
@@ -15,6 +17,8 @@ public class RecordUtils {
                 ((buf[offset+7] & 0xff) << 16) |
                 ((buf[offset+8] & 0xff) << 8) |
                 (buf[offset+9] & 0xff));
+
+        System.out.println(type+"  "+dnsClass+"  "+ttl+"  "+(((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)));
 
         byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
         System.arraycopy(buf, offset+12, addr, 0, addr.length);

@@ -3,9 +3,8 @@ package unet.dns;
 import unet.dns.messages.DnsRequest;
 import unet.dns.messages.DnsResponse;
 import unet.dns.messages.inter.DnsClass;
-import unet.dns.messages.inter.OpCodes;
 import unet.dns.messages.inter.Types;
-import unet.dns.utils.DnsQuery;
+import unet.dns.utils.inter.DnsQuery;
 import unet.dns.utils.inter.DnsRecord;
 
 import java.io.IOException;
@@ -63,31 +62,31 @@ public class Resolver {
         //System.err.println("A: "+packet.getLength());
         //System.out.println("A: "+response.getQuery());
         //System.out.println("A: "+response.getResponseCode());
-        System.out.println(response.getResponseCode());
-        System.out.println(response.isAuthoritative());
-        System.out.println("QUERIES");
+        //System.out.println(response.getResponseCode());
+        //System.out.println(response.isAuthoritative()+"  "+packet.getLength());
+        //System.out.println("QUERIES");
         System.out.println();
         for(DnsQuery q : response.getQueries()){
-            System.out.println(q);
-            System.out.println();
+            //System.out.println(q);
+            //System.out.println();
         }
 
-        System.out.println();
-        System.out.println("ANSWERS");
-        System.out.println();
+        //System.out.println();
+        //System.out.println("ANSWERS");
+        //System.out.println();
 
         for(DnsRecord record : response.getAnswers()){
             System.out.println(record);
             System.out.println();
         }
 
-        System.out.println();
-        System.out.println("NAME SERVERS");
-        System.out.println();
+        //System.out.println();
+        //System.out.println("NAME SERVERS");
+        //System.out.println();
 
         for(DnsRecord record : response.getNameServers()){
-            System.out.println(record);
-            System.out.println();
+            //System.out.println(record);
+            //System.out.println();
         }
     }
 }

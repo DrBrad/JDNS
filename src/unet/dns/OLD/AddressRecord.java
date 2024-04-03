@@ -1,4 +1,4 @@
-package unet.dns.utils;
+package unet.dns.OLD;
 
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
@@ -12,7 +12,7 @@ public class AddressRecord extends DnsRecord {
     private InetAddress address;
 
     public AddressRecord(byte[] addr, Types type, DnsClass dnsClass, int ttl){
-        super(type, dnsClass, ttl);
+        //super(type, dnsClass, ttl);
         try{
             address = InetAddress.getByAddress(addr);
         }catch(UnknownHostException e){
@@ -21,7 +21,7 @@ public class AddressRecord extends DnsRecord {
     }
 
     public AddressRecord(InetAddress address, Types type, DnsClass dnsClass, int ttl){
-        super(type, dnsClass, ttl);
+        //super(type, dnsClass, ttl);
         this.address = address;
     }
 
