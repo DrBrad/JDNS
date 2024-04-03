@@ -63,7 +63,7 @@ public class Resolver {
         //System.out.println("A: "+response.getQuery());
         //System.out.println("A: "+response.getResponseCode());
         //System.out.println(response.getResponseCode());
-        //System.out.println(response.isAuthoritative()+"  "+packet.getLength());
+        System.out.println(response.isAuthoritative()+"  "+packet.getLength());
         //System.out.println("QUERIES");
         System.out.println();
         for(DnsQuery q : response.getQueries()){

@@ -6,7 +6,6 @@ import unet.dns.utils.DomainUtils;
 
 public class SOARecord extends DnsRecord {
 
-    private int priority;
     private String domain;
 
     public SOARecord(){
@@ -27,14 +26,6 @@ public class SOARecord extends DnsRecord {
         domain = DomainUtils.unpackDomain(buf, off+8);
     }
 
-    public void setPriority(int priority){
-        this.priority = priority;
-    }
-
-    public int getPriority(){
-        return priority;
-    }
-
     public void setDomain(String domain){
         this.domain = domain;
     }
@@ -45,6 +36,6 @@ public class SOARecord extends DnsRecord {
 
     @Override
     public String toString(){
-        return super.toString()+"\r\nPRIORITY: "+priority+"\r\nDOMAIN: "+domain;
+        return super.toString()+"\r\nDOMAIN: "+domain;
     }
 }
