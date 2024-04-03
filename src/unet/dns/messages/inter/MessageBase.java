@@ -127,8 +127,6 @@ public class MessageBase {
                     byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
                     System.arraycopy(buf, offset+12, addr, 0, addr.length);
 
-                    //System.out.println(type+"  "+dnsClass+"  "+ttl+"  "+new String(addr));
-
                     DnsRecord record;
 
                     switch(type){
@@ -140,7 +138,7 @@ public class MessageBase {
                         case MX:
                         case NS: //USES DOMAIN
                         case SOA: //USES DOMAIN
-                            System.err.println("MX  "+new String(addr)+"  "+ DomainUtils.unpackDomain(addr).length());
+                            //System.err.println(type+"  \""+new String(addr)+"\"  "+ DomainUtils.unpackDomain(addr).length());
                             record = new NameRecord(addr, type, dnsClass, ttl);
                             break;
 
@@ -151,6 +149,7 @@ public class MessageBase {
                             return;
 
                         default:
+                            System.out.println(type);
                             return;
                     }
 

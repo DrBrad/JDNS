@@ -29,6 +29,7 @@ public class Resolver {
         //request.setQuery(query);
 
         //request.setOpCode(OpCodes.IQUERY);
+        //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
         request.addQuery(new DnsQuery(query, Types.MX, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery("google.com", Types.A, DnsClass.IN));
@@ -67,7 +68,7 @@ public class Resolver {
         System.out.println("QUERIES");
         System.out.println();
         for(DnsQuery q : response.getQueries()){
-            System.out.println(q);
+            //System.out.println(q);
             System.out.println();
         }
 
@@ -85,7 +86,7 @@ public class Resolver {
         System.out.println();
 
         for(DnsRecord record : response.getNameServers()){
-            System.out.println(record);
+            //System.out.println(record);
             System.out.println();
         }
     }
