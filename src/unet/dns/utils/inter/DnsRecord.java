@@ -42,6 +42,10 @@ public class DnsRecord {
         return ttl;
     }
 
+    public int getLength(){
+        return 12;
+    }
+
     @Override
     public String toString(){
         return "TYPE: "+type+"\r\nCLASS: "+dnsClass+"\r\nTTL: "+ttl;

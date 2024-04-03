@@ -28,6 +28,10 @@ public class NameRecord extends DnsRecord {
         return domain;
     }
 
+    public int getLength(){
+        return super.getLength()+domain.length(); //CHANGE THIS
+    }
+
     @Override
     public String toString(){
         return super.toString()+"\r\nDOMAIN: "+domain;

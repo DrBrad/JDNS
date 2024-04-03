@@ -5,11 +5,16 @@ import unet.dns.messages.inter.Types;
 
 import java.nio.charset.StandardCharsets;
 
+import static unet.dns.utils.DomainUtils.unpackDomain;
+
 public class DnsQuery {
 
     private String query;
     private Types type;
     private DnsClass dnsClass;
+
+    public DnsQuery(){
+    }
 
     public DnsQuery(String query, Types type, DnsClass dnsClass){
         this.query = query;
@@ -46,7 +51,12 @@ public class DnsQuery {
         return buf;
     }
 
-    public void decode(byte[] buf){
+    public void decode(byte[] buf, int off){
+        query = unpackDomain(buf, off);
+        off += query.length()+2;
+
+        type = Types.getTypeFromCode(((buf[off] & 0xFF) << 8) | (buf[off+1] & 0xFF));
+        dnsClass = DnsClass.getClassFromCode(((buf[off+2] & 0xFF) << 8) | (buf[off+3] & 0xFF));
     }
 
     public int getLength(){

@@ -1,17 +1,30 @@
 package unet.dns.messages.inter;
 
-import unet.dns.utils.AddressRecord;
-import unet.dns.utils.DnsQuery;
-import unet.dns.utils.DomainUtils;
-import unet.dns.utils.NameRecord;
+import unet.dns.utils.*;
 import unet.dns.utils.inter.DnsRecord;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static unet.dns.utils.DomainUtils.unpackDomain;
-
 public class MessageBase {
+
+    /*
+                                   1  1  1  1  1  1
+     0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                      ID                       |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    QDCOUNT                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    ANCOUNT                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    NSCOUNT                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    ARCOUNT                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    */
 
     protected int id;
     //protected String query;
@@ -99,115 +112,44 @@ public class MessageBase {
         int offset = 12;
 
         for(int i = 0; i < qdCount; i++){
-            String domainName = unpackDomain(buf, offset);
-            offset += domainName.length()+2;
-
-            Types type = Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF));
-            DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-            queries.add(new DnsQuery(domainName, type, dnsClass));
-
-            offset += 4;
-            length += domainName.length()+6;
+            DnsQuery query = new DnsQuery();
+            query.decode(buf, offset);
+            queries.add(query);
+            offset += query.getLength();
         }
 
+
+        //System.out.println(((buf[offset] & 0b11000000) >>> 6)+"  "+new String(buf, offset, buf.length-offset));
 
         for(int i = 0; i < anCount; i++){
-            switch((buf[offset] & 0b11000000) >>> 6){
-                case 3:
-                    Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-                    DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
-
-                    int ttl = (((buf[offset+6] & 0xff) << 24) |
-                            ((buf[offset+7] & 0xff) << 16) |
-                            ((buf[offset+8] & 0xff) << 8) |
-                            (buf[offset+9] & 0xff));
-
-                    byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
-                    System.arraycopy(buf, offset+12, addr, 0, addr.length);
-
-                    DnsRecord record;
-
-                    switch(type){
-                        case A: //USES ADDR
-                        case AAAA: //USES ADDR
-                            record = new AddressRecord(addr, type, dnsClass, ttl);
-                            break;
-
-                        case MX:
-                        case NS: //USES DOMAIN
-                        case SOA: //USES DOMAIN
-                            //System.err.println(type+"  \""+new String(addr)+"\"  "+ DomainUtils.unpackDomain(addr).length());
-                            record = new NameRecord(addr, type, dnsClass, ttl);
-                            break;
-
-                        case TXT:
-                            //MX  IN  1262   �.
-                            //TXT  IN  300  v=spf1 redirect=_spf.google.com
-                            System.out.println("TXT RECORD");
-                            return;
-
-                        default:
-                            System.out.println(type);
-                            return;
-                    }
-
-                    offset += addr.length+12;
-                    answers.add(record);
-
-                    break;
-
-                case 0:
-                    offset++;
-                    break;
-            }
+            DnsRecord record = RecordUtils.unpackRecord(buf, offset);
+            answers.add(record);
+            offset += record.getLength()+1;
         }
-
 
         for(int i = 0; i < nsCount; i++){
-            switch((buf[offset] & 0b11000000) >>> 6){
-                case 3:
-                    Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+            DnsRecord record = RecordUtils.unpackRecord(buf, offset);
+            nameServers.add(record);
+            offset += record.getLength()+1;
+        }
 
-                    DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
-
-                    int ttl = (((buf[offset+6] & 0xff) << 24) |
-                            ((buf[offset+7] & 0xff) << 16) |
-                            ((buf[offset+8] & 0xff) << 8) |
-                            (buf[offset+9] & 0xff));
-
-                    byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
-                    System.arraycopy(buf, offset+12, addr, 0, addr.length);
-
-                    DnsRecord record;
-
-                    switch(type){
-                        case A: //USES ADDR
-                        case AAAA: //USES ADDR
-                            record = new AddressRecord(addr, type, dnsClass, ttl);
-                            break;
-
-                        case NS: //USES DOMAIN
-                        case SOA: //USES DOMAIN
-                            record = new NameRecord(addr, type, dnsClass, ttl);
-                            break;
-
-                        default:
-                            return;
-                    }
-
-                    offset += addr.length+12;
-                    nameServers.add(record);
-
-                    break;
-
-                case 0:
-                    offset++;
-                    break;
-            }
+        for(int i = 0; i < arCount; i++){
+            DnsRecord record = RecordUtils.unpackRecord(buf, offset);
+            additionalRecords.add(record);
+            offset += record.getLength()+1;
         }
     }
+
+
+
+
+
+
+
+
+
+
+
 
     public void setID(int id){
         this.id = id;

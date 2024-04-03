@@ -68,7 +68,7 @@ public class Resolver {
         System.out.println("QUERIES");
         System.out.println();
         for(DnsQuery q : response.getQueries()){
-            //System.out.println(q);
+            System.out.println(q);
             System.out.println();
         }
 
@@ -86,7 +86,7 @@ public class Resolver {
         System.out.println();
 
         for(DnsRecord record : response.getNameServers()){
-            //System.out.println(record);
+            System.out.println(record);
             System.out.println();
         }
     }

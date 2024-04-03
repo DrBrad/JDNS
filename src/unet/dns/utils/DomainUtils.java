@@ -31,7 +31,7 @@ public class DomainUtils {
         int i = off;
         while(i < addr.length){
             int length = addr[i++];
-            System.out.println(length+"  A  "+i);
+            //System.out.println(length+"  A  "+i);
 
             if(length == 0){
                 break;

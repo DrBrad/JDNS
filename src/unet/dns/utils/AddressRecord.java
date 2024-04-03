@@ -33,6 +33,10 @@ public class AddressRecord extends DnsRecord {
         return address;
     }
 
+    public int getLength(){
+        return super.getLength()+address.getAddress().length; //CHANGE THIS
+    }
+
     @Override
     public String toString(){
         return super.toString()+"\r\nADDRESS: "+address.getHostAddress();
