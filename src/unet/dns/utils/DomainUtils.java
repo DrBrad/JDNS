@@ -21,38 +21,60 @@ public class DomainUtils {
         return buf;
     }
 
-    public static String unpackDomain(byte[] addr){
-        return unpackDomain(addr, 0);
-    }
-
     public static String unpackDomain(byte[] addr, int off){
         StringBuilder builder = new StringBuilder();
 
         int i = off;
         while(i < addr.length){
             int length = addr[i++];
-            //System.out.println(length+"  A  "+i);
 
             if(length == 0){
                 break;
-            }
-
-            if(builder.length() > 0){
-                builder.append(".");
             }
 
             if((length & 0xc0) == 0xc0){
                 i = ((length & 0x3f) << 8) | (addr[i++] & 0xff);
 
             }else{
+                if(builder.length() > 0){
+                    builder.append(".");
+                }
+
                 byte[] label = new byte[length];
                 System.arraycopy(addr, i, label, 0, length);
-                //System.out.println(new String(label));
                 builder.append(new String(label));
                 i += length;
             }
         }
 
         return builder.toString();
+    }
+
+    public static String parseDomainName(byte[] buf, int off){
+        StringBuilder domainName = new StringBuilder();
+
+        while(true){
+            int labelLength = buf[off++];
+
+            if(labelLength == 0){
+                break;
+            }
+
+            if(domainName.length() > 0){
+                domainName.append(".");
+            }
+
+            if((labelLength & 0xC0) == 0xC0){
+                int pointer = ((labelLength & 0x3F) << 8) | (buf[off++] & 0xFF);
+                off = pointer;
+
+            }else{
+                byte[] labelBytes = Arrays.copyOfRange(buf, off, off+labelLength);
+                domainName.append(new String(labelBytes));
+                off += labelLength;
+            }
+        }
+
+        return domainName.toString();
     }
 }

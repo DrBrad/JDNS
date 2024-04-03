@@ -31,7 +31,7 @@ public class ARecord extends DnsRecord {
         try{
             address = InetAddress.getByAddress(record);
         }catch(UnknownHostException e){
-            throw new IllegalArgumentException("Invalid Inet Address");
+            //throw new IllegalArgumentException("Invalid Inet Address");
         }
     }
 

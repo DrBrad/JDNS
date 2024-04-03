@@ -23,11 +23,21 @@ public class MXRecord extends DnsRecord {
     public void decode(byte[] buf, int off){
         super.decode(buf, off);
 
+
+
+        //byte[] record = new byte[((buf[off+6] & 0xFF) << 8) | (buf[off+7] & 0xFF)];
+        //System.arraycopy(buf, off+8, record, 0, record.length);
+
+        priority = ((buf[off+8] & 0xFF) << 8) | (buf[off+9] & 0xFF);//((record[0] & 0xFF) << 8) | (record[1] & 0xFF);
+        domain = DomainUtils.unpackDomain(buf, off+10);
+
+        /*
+
         byte[] record = new byte[((buf[off+6] & 0xFF) << 8) | (buf[off+7] & 0xFF)];
         System.arraycopy(buf, off+8, record, 0, record.length);
 
-        priority = ((record[0] & 0xFF) << 8) | (record[1] & 0xFF);
-        domain = new String(record, 0, record.length-2);//DomainUtils.unpackDomain(record, 2);
+        priority = ((buf[off+8] & 0xFF) << 8) | (buf[off+9] & 0xFF);
+        domain = DomainUtils.unpackDomain(buf, off+10);*/
     }
 
     @Override

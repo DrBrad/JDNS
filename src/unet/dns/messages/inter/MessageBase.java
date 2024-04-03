@@ -143,8 +143,9 @@ public class MessageBase {
 
             record.decode(buf, offset+4);
             answers.add(record);
-            offset += record.getLength()+2;
+            offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
         }
+        /*
 
         for(int i = 0; i < nsCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
@@ -190,7 +191,7 @@ public class MessageBase {
             record.decode(buf, offset+4);
             additionalRecords.add(record);
             offset += record.getLength()+2;
-        }
+        }*/
     }
 
     public void setID(int id){
