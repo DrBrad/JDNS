@@ -24,7 +24,7 @@ I have not been able to test every record type, so some may function but I'm unc
 | CAA | Untested |
 
 > [!NOTE]
-> IQUERY (Inverse Query) is depricated in IETF-1035 and theirfore not implemented in this project
+> IQUERY (Inverse Query) is depricated in [RFC-1035](https://datatracker.ietf.org/doc/html/rfc3425) and theirfore not implemented in this project
 
 Usage
 -----
