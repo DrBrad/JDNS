@@ -47,6 +47,7 @@ public class DomainUtils {
             }else{
                 byte[] label = new byte[length];
                 System.arraycopy(addr, i, label, 0, length);
+                //System.out.println(new String(label));
                 builder.append(new String(label));
                 i += length;
             }

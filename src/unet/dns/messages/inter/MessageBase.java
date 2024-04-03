@@ -28,7 +28,6 @@ public class MessageBase {
     */
 
     protected int id;
-    //protected String query;
     protected OpCodes opCode = OpCodes.QUERY;
     protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
@@ -98,7 +97,7 @@ public class MessageBase {
         opCode = OpCodes.getOpFromCode((buf[2] >> 3) & 0xF);
         authoritative = ((buf[2] >> 2) & 0x1) == 1;
         truncated = ((buf[2] >> 1) & 0x1) == 1;
-        //boolean recursionDesired = (buf[2] & 0x1) == 1;
+        recursionDesired = (buf[2] & 0x1) == 1;
         recursionAvailable = ((buf[3] >> 7) & 0x1) == 1;
         int z = (buf[3] >> 4) & 0x3;
         responseCode = ResponseCodes.getResponseCodeFromCode(buf[3] & 0xF);
@@ -122,27 +121,73 @@ public class MessageBase {
 
         for(int i = 0; i < anCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            //System.out.println(pointer);
-            DnsRecord record = new DnsRecord();
-            record.decode(buf, offset+2);
+            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+            DnsRecord record;
+            switch(type){
+                case A:
+                    record = new ARecord();
+                    break;
+
+                case AAAA:
+                    record = new ARecord();
+                    break;
+
+                case MX:
+                    record = new MXRecord();
+                    break;
+
+                default:
+                    return;
+            }
+
+            record.decode(buf, offset+4);
             answers.add(record);
             offset += record.getLength()+2;
         }
 
         for(int i = 0; i < nsCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            //System.out.println(pointer);
-            DnsRecord record = new DnsRecord();
-            record.decode(buf, offset+2);
+            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+            DnsRecord record;
+            switch(type){
+                case A:
+                    record = new ARecord();
+                    break;
+
+                case MX:
+                    record = new MXRecord();
+                    break;
+
+                default:
+                    return;
+            }
+
+            record.decode(buf, offset+4);
             nameServers.add(record);
             offset += record.getLength()+2;
         }
 
         for(int i = 0; i < arCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            //System.out.println(pointer);
-            DnsRecord record = new DnsRecord();
-            record.decode(buf, offset+2);
+            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+
+            DnsRecord record;
+            switch(type){
+                case A:
+                    record = new ARecord();
+                    break;
+
+                case MX:
+                    record = new MXRecord();
+                    break;
+
+                default:
+                    return;
+            }
+
+            record.decode(buf, offset+4);
             additionalRecords.add(record);
             offset += record.getLength()+2;
         }
