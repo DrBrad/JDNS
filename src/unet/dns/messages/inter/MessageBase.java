@@ -1,8 +1,9 @@
 package unet.dns.messages.inter;
 
 import unet.dns.records.*;
-import unet.dns.utils.inter.DnsQuery;
+import unet.dns.utils.DnsQuery;
 import unet.dns.records.inter.DnsRecord;
+import unet.dns.utils.DomainUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,36 +110,51 @@ public class MessageBase {
 
         System.out.println(qdCount+"  "+anCount+"  "+nsCount+"  "+arCount);
 
+        //List<Integer> qdLocations = new ArrayList<>();
         int offset = 12;
 
         for(int i = 0; i < qdCount; i++){
             DnsQuery query = new DnsQuery();
             query.decode(buf, offset);
             queries.add(query);
+            //qdLocations.add(offset);
             offset += query.getLength();
+            //System.out.println(query);
             //System.out.println(query);
         }
 
         for(int i = 0; i < anCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF)));
-            record.decode(buf, offset+4);
+            offset += 2;
+            String query = DomainUtils.unpackDomain(buf, pointer);
+
+            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF)));
+            record.setQuery(query);
+            record.decode(buf, offset+2);
             answers.add(record);
             offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
         }
 
         for(int i = 0; i < nsCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF)));
-            record.decode(buf, offset+4);
+            offset += 2;
+            String query = DomainUtils.unpackDomain(buf, pointer);
+
+            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF)));
+            record.setQuery(query);
+            record.decode(buf, offset+2);
             nameServers.add(record);
-            offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
+            offset += ((buf[offset+8] & 0xFF) << 8) | (buf[offset+9] & 0xFF)+10;
         }
 
         for(int i = 0; i < arCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF)));
-            record.decode(buf, offset+4);
+            offset += 2;
+            String query = DomainUtils.unpackDomain(buf, pointer);
+
+            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset] & 0xFF) << 8) | (buf[offset+1] & 0xFF)));
+            record.setQuery(query);
+            record.decode(buf, offset+2);
             additionalRecords.add(record);
             offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
         }
@@ -162,7 +178,7 @@ public class MessageBase {
                 return new SOARecord(); //TODO - IS THIS ONLY NAME_SERVER RESPONSE...?
 
             case PTR:
-                return null;
+                return new PTRRecord();
 
             case MX:
                 return new MXRecord();
@@ -171,12 +187,15 @@ public class MessageBase {
                 return new TXTRecord();
 
             case SRV:
+                System.out.println("SRV");
                 return null;
 
             case CAA:
+                System.out.println("CAA");
                 return null;
 
             default:
+                System.out.println("UNKNOWN");
                 return null;
         }
     }

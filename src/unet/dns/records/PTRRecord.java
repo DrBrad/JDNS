@@ -4,12 +4,12 @@ import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
 import unet.dns.utils.DomainUtils;
 
-public class SOARecord extends DnsRecord {
+public class PTRRecord extends DnsRecord {
 
     private String domain;
 
-    public SOARecord(){
-        type = Types.SOA;
+    public PTRRecord(){
+        type = Types.PTR;
     }
 
     @Override

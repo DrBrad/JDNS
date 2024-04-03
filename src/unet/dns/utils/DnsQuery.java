@@ -1,9 +1,7 @@
-package unet.dns.utils.inter;
+package unet.dns.utils;
 
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
-
-import java.nio.charset.StandardCharsets;
 
 import static unet.dns.utils.DomainUtils.unpackDomain;
 

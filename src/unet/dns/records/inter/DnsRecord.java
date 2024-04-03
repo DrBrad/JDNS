@@ -9,6 +9,8 @@ public class DnsRecord {
     protected DnsClass dnsClass;
     protected int ttl;
 
+    protected String query;
+
     public DnsRecord(){
     }
 
@@ -55,18 +57,16 @@ public class DnsRecord {
         return ttl;
     }
 
-    /*
-    public void setRecord(byte[] record){
-        this.record = record;
+    public void setQuery(String query){
+        this.query = query;
     }
 
-    public byte[] getRecord(){
-        return record;
+    public String getQuery(){
+        return query;
     }
-    */
 
     @Override
     public String toString(){
-        return "TYPE: "+type+"\r\nCLASS: "+dnsClass+"\r\nTTL: "+ttl;//+"\r\nRECORD: "+new String(record);
+        return "TYPE: "+type+"\r\nCLASS: "+dnsClass+"\r\nTTL: "+ttl+"\r\nQUERY: "+query;//+"\r\nRECORD: "+new String(record);
     }
 }

@@ -3,8 +3,9 @@ package unet.dns;
 import unet.dns.messages.DnsRequest;
 import unet.dns.messages.DnsResponse;
 import unet.dns.messages.inter.DnsClass;
+import unet.dns.messages.inter.OpCodes;
 import unet.dns.messages.inter.Types;
-import unet.dns.utils.inter.DnsQuery;
+import unet.dns.utils.DnsQuery;
 import unet.dns.records.inter.DnsRecord;
 
 import java.io.IOException;
@@ -19,7 +20,8 @@ public class Resolver {
 
     public Resolver(String query)throws IOException {
         //InetAddress ipAddress = InetAddress.getByName("elisabeth.ns.cloudflare.com");
-        InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
+        InetAddress ipAddress = InetAddress.getByName("1.1.1.1");
+        //InetAddress ipAddress = InetAddress.getByName("192.168.16.2");
 
 
         Random random = new Random();
@@ -29,7 +31,7 @@ public class Resolver {
 
         //request.setOpCode(OpCodes.IQUERY);
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
-        request.addQuery(new DnsQuery(query, Types.TXT, DnsClass.IN));
+        request.addQuery(new DnsQuery(query, Types.PTR, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery("google.com", Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
@@ -46,13 +48,20 @@ public class Resolver {
         DatagramPacket dnsReqPacket = new DatagramPacket(buf, buf.length, ipAddress, DNS_SERVER_PORT);
         socket.send(dnsReqPacket);
 
-
         //System.out.println(id);
 
 
         buf = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
+
+        StringBuilder sb = new StringBuilder();
+        for (byte b : packet.getData()) {
+            sb.append(String.format("%02X ", b));
+        }
+        System.out.println(sb.toString());
+
+        //System.out.println(packet.getLength());
 
         id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 
@@ -61,9 +70,9 @@ public class Resolver {
 
         //System.err.println("A: "+packet.getLength());
         //System.out.println("A: "+response.getQuery());
-        //System.out.println("A: "+response.getResponseCode());
-        //System.out.println(response.getResponseCode());
+        System.out.println("Z: "+response.getResponseCode());
         System.out.println(response.isAuthoritative()+"  "+packet.getLength());
+        //System.out.println(response.getResponseCode());
         //System.out.println("QUERIES");
         System.out.println();
         for(DnsQuery q : response.getQueries()){
@@ -86,6 +95,7 @@ public class Resolver {
 
         for(DnsRecord record : response.getNameServers()){
             System.out.println(record);
+            System.out.println(record.getQuery());
             System.out.println();
         }
     }
