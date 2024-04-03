@@ -1,7 +1,5 @@
 package unet.dns.utils;
 
-import java.util.Arrays;
-
 public class DomainUtils {
 
     public static byte[] packDomain(String domain){
@@ -15,7 +13,6 @@ public class DomainUtils {
             offset += addr.length+1;
         }
 
-        // End of domain name (null)
         buf[offset] = 0x00;
 
         return buf;

@@ -14,14 +14,4 @@ public class DnsRequest extends MessageBase {
         //qdCount = 1;
         recursionDesired = true;
     }
-
-    @Override
-    public byte[] encode(){
-        byte[] buf = super.encode();
-        return buf;
-    }
-
-    @Override
-    public void decode(byte[] buf){
-    }
 }

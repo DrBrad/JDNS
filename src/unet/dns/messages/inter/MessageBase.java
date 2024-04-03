@@ -34,8 +34,6 @@ public class MessageBase {
 
     protected boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
     protected int length;
-    //QDCOUNT = Question count
-    //ANCOUNT = Answer Count
 
     protected List<DnsQuery> queries;
     private List<DnsRecord> answers, nameServers, additionalRecords;
@@ -132,7 +130,7 @@ public class MessageBase {
             record.setQuery(query);
             record.decode(buf, offset+2);
             answers.add(record);
-            offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
+            offset += ((buf[offset+8] & 0xFF) << 8) | (buf[offset+9] & 0xFF)+10;
         }
 
         for(int i = 0; i < nsCount; i++){
@@ -156,8 +154,10 @@ public class MessageBase {
             record.setQuery(query);
             record.decode(buf, offset+2);
             additionalRecords.add(record);
-            offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
+            offset += ((buf[offset+8] & 0xFF) << 8) | (buf[offset+9] & 0xFF)+10;
         }
+
+        length = offset-12;
     }
 
     private DnsRecord createRecordByType(Types type){
@@ -206,6 +206,14 @@ public class MessageBase {
 
     public int getID(){
         return id;
+    }
+
+    public void setQR(boolean qr){
+        this.qr = qr;
+    }
+
+    public boolean isQR(){
+        return qr;
     }
 
     public void setOpCode(OpCodes opCode){
