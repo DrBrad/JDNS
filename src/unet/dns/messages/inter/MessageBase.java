@@ -1,8 +1,8 @@
 package unet.dns.messages.inter;
 
-import unet.dns.utils.*;
+import unet.dns.records.*;
 import unet.dns.utils.inter.DnsQuery;
-import unet.dns.utils.inter.DnsRecord;
+import unet.dns.records.inter.DnsRecord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,77 +121,64 @@ public class MessageBase {
 
         for(int i = 0; i < anCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-            DnsRecord record;
-            switch(type){
-                case A:
-                    record = new ARecord();
-                    break;
-
-                case AAAA:
-                    record = new ARecord();
-                    break;
-
-                case MX:
-                    record = new MXRecord();
-                    break;
-
-                default:
-                    return;
-            }
-
+            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF)));
             record.decode(buf, offset+4);
             answers.add(record);
             offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
         }
-        /*
 
         for(int i = 0; i < nsCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-            DnsRecord record;
-            switch(type){
-                case A:
-                    record = new ARecord();
-                    break;
-
-                case MX:
-                    record = new MXRecord();
-                    break;
-
-                default:
-                    return;
-            }
-
+            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF)));
             record.decode(buf, offset+4);
             nameServers.add(record);
-            offset += record.getLength()+2;
+            offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
         }
 
         for(int i = 0; i < arCount; i++){
             int pointer = (((buf[offset] & 0x3F) << 8) | (buf[offset+1] & 0xFF)) & 0x3FFF;
-            Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
-
-            DnsRecord record;
-            switch(type){
-                case A:
-                    record = new ARecord();
-                    break;
-
-                case MX:
-                    record = new MXRecord();
-                    break;
-
-                default:
-                    return;
-            }
-
+            DnsRecord record = createRecordByType(Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF)));
             record.decode(buf, offset+4);
             additionalRecords.add(record);
-            offset += record.getLength()+2;
-        }*/
+            offset += ((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)+12;
+        }
+    }
+
+    private DnsRecord createRecordByType(Types type){
+        switch(type){
+            case A:
+                return new ARecord();
+
+            case AAAA:
+                return new ARecord();
+
+            case NS:
+                return new NSRecord();
+
+            case CNAME:
+                return new CNameRecord(); //TODO - IS THIS ONLY NAME_SERVER RESPONSE...?
+
+            case SOA:
+                return new SOARecord(); //TODO - IS THIS ONLY NAME_SERVER RESPONSE...?
+
+            case PTR:
+                return null;
+
+            case MX:
+                return new MXRecord();
+
+            case TXT:
+                return null;
+
+            case SRV:
+                return null;
+
+            case CAA:
+                return null;
+
+            default:
+                return null;
+        }
     }
 
     public void setID(int id){

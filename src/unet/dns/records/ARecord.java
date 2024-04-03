@@ -1,17 +1,17 @@
-package unet.dns.utils;
+package unet.dns.records;
 
 import unet.dns.messages.inter.Types;
-import unet.dns.utils.inter.DnsRecord;
+import unet.dns.records.inter.DnsRecord;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class AAAARecord extends DnsRecord {
+public class ARecord extends DnsRecord {
 
     private InetAddress address;
 
-    public AAAARecord(){
-        type = Types.AAAA;
+    public ARecord(){
+        type = Types.A;
     }
 
     @Override
@@ -33,11 +33,6 @@ public class AAAARecord extends DnsRecord {
         }catch(UnknownHostException e){
             throw new IllegalArgumentException("Invalid Inet Address");
         }
-    }
-
-    @Override
-    public int getLength(){
-        return super.getLength()+address.getAddress().length;
     }
 
     public void setAddress(InetAddress address){

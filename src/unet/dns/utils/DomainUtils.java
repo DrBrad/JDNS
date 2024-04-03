@@ -49,32 +49,4 @@ public class DomainUtils {
 
         return builder.toString();
     }
-
-    public static String parseDomainName(byte[] buf, int off){
-        StringBuilder domainName = new StringBuilder();
-
-        while(true){
-            int labelLength = buf[off++];
-
-            if(labelLength == 0){
-                break;
-            }
-
-            if(domainName.length() > 0){
-                domainName.append(".");
-            }
-
-            if((labelLength & 0xC0) == 0xC0){
-                int pointer = ((labelLength & 0x3F) << 8) | (buf[off++] & 0xFF);
-                off = pointer;
-
-            }else{
-                byte[] labelBytes = Arrays.copyOfRange(buf, off, off+labelLength);
-                domainName.append(new String(labelBytes));
-                off += labelLength;
-            }
-        }
-
-        return domainName.toString();
-    }
 }

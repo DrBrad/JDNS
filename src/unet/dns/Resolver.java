@@ -5,7 +5,7 @@ import unet.dns.messages.DnsResponse;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.utils.inter.DnsQuery;
-import unet.dns.utils.inter.DnsRecord;
+import unet.dns.records.inter.DnsRecord;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,8 +18,8 @@ public class Resolver {
     public static final int DNS_SERVER_PORT = 53;
 
     public Resolver(String query)throws IOException {
-        //InetAddress ipAddress = InetAddress.getByName("elisabeth.ns.cloudflare.com");
-        InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
+        InetAddress ipAddress = InetAddress.getByName("elisabeth.ns.cloudflare.com");
+        //InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
 
 
         Random random = new Random();
@@ -29,7 +29,7 @@ public class Resolver {
 
         //request.setOpCode(OpCodes.IQUERY);
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
-        request.addQuery(new DnsQuery(query, Types.MX, DnsClass.IN));
+        request.addQuery(new DnsQuery(query, Types.CNAME, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery("google.com", Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery(query, Types.A, DnsClass.IN));
@@ -67,8 +67,8 @@ public class Resolver {
         //System.out.println("QUERIES");
         System.out.println();
         for(DnsQuery q : response.getQueries()){
-            //System.out.println(q);
-            //System.out.println();
+            System.out.println(q);
+            System.out.println();
         }
 
         //System.out.println();
@@ -85,8 +85,8 @@ public class Resolver {
         //System.out.println();
 
         for(DnsRecord record : response.getNameServers()){
-            //System.out.println(record);
-            //System.out.println();
+            System.out.println(record);
+            System.out.println();
         }
     }
 }
