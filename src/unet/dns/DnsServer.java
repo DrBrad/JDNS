@@ -117,14 +117,17 @@ public class DnsServer {
                     @Override
                     public void onResponse(ResponseEvent event){
                         MessageBase response = event.getMessage();
+                        System.out.println(response.getQueries().size());
                         response.setID(id);
                         response.setDestination(message.getOrigin());
 
+                        /*
                         try{
                             send(response);
                         }catch(IOException e){
                             e.printStackTrace();
                         }
+                        */
                     }
                 });
 
