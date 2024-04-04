@@ -4,6 +4,8 @@ import unet.dns.messages.MessageBase;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
+import unet.dns.rpc.events.MessageEvent;
+import unet.dns.rpc.events.ResponseEvent;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
 
@@ -29,16 +31,16 @@ public class Main {
 
     public static void main(String[] args)throws Exception {
         DnsClient client = new DnsClient();
-        client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
+        client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.4.1"), 53));
         client.addServer(new InetSocketAddress(InetAddress.getByName("8.8.8.8"), 53));
         client.start(8080);
 
         MessageBase request = new MessageBase();
-        request.setDestination(new InetSocketAddress(InetAddress.getByName("8.8.8.8"), 53));
         request.addQuery(new DnsQuery("google.com", Types.NS, DnsClass.IN));
         client.send(request, new ResponseCallback(){
             @Override
-            public void onResponse(MessageBase response){
+            public void onResponse(ResponseEvent event){
+                MessageBase response = event.getMessage();
                 System.out.println("Z: "+response.getResponseCode());
                 System.out.println(response.isAuthoritative());
                 //System.out.println(response.getResponseCode());

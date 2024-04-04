@@ -1,9 +1,10 @@
 package unet.dns;
 
 import unet.dns.messages.MessageBase;
+import unet.dns.rpc.events.ResponseEvent;
+import unet.dns.rpc.events.StalledEvent;
 import unet.dns.utils.Call;
 import unet.dns.utils.ResponseCallback;
-import unet.dns.utils.ResponseTracker;
 
 import java.io.IOException;
 import java.net.*;
@@ -16,11 +17,11 @@ public class DnsClient {
     private DatagramSocket server;
     private ResponseTracker tracker;
     private Random random;
-    private List<InetSocketAddress> servers;
+    protected List<InetSocketAddress> servers;
 
     public DnsClient(){
         servers = new ArrayList<>();
-        tracker = new ResponseTracker();
+        tracker = new ResponseTracker(this);
         random = new Random();
     }
 
@@ -35,6 +36,15 @@ public class DnsClient {
             @Override
             public void run(){
                 while(!server.isClosed()){
+                    tracker.removeStalled();
+                }
+            }
+        }).start();
+
+        new Thread(new Runnable(){
+            @Override
+            public void run(){
+                while(!server.isClosed()){
                     try{
                         DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
                         server.receive(packet);
@@ -44,7 +54,6 @@ public class DnsClient {
                                 @Override
                                 public void run(){
                                     onReceive(packet);
-                                    tracker.removeStalled();
                                 }
                             }).start();
                         }
@@ -86,29 +95,35 @@ public class DnsClient {
                 throw new IllegalArgumentException("Packet is invalid");
             }
 
+            ResponseEvent event = new ResponseEvent(message);
+            event.received();
+            event.setSentTime(call.getSentTime());
+            event.setRequest(call.getMessage());
 
-            call.getResponseCallback().onResponse(message);
+            call.getResponseCallback().onResponse(event);
 
         }else{
             System.out.println("REQUEST");
         }
+    }
 
+    public void send(MessageBase message)throws IOException {
+        byte[] buf = message.encode();
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, message.getDestinationAddress(), message.getDestinationPort());
+        server.send(packet);
     }
 
     public void send(MessageBase message, ResponseCallback callback)throws IOException {
         if(!message.isQR()){
             int id = random.nextInt(32767);
             message.setID(id);
-            if(message.getDestination() == null){
-                message.setDestination(servers.get(0));
-            }
+
+            message.setDestination(servers.get(0));
 
             tracker.add(id, new Call(message, callback));
         }
 
-        byte[] buf = message.encode();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, message.getDestinationAddress(), message.getDestinationPort());
-        server.send(packet);
+        send(message);
     }
 
     public boolean containsServer(InetSocketAddress address){
@@ -121,5 +136,9 @@ public class DnsClient {
 
     public InetSocketAddress getServer(int i){
         return servers.get(i);
+    }
+
+    public List<InetSocketAddress> getServers(){
+        return servers;
     }
 }

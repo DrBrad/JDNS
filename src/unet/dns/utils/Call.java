@@ -2,12 +2,13 @@ package unet.dns.utils;
 
 import unet.dns.messages.MessageBase;
 
-import static unet.dns.utils.ResponseTracker.STALLED_TIME;
+import static unet.dns.ResponseTracker.STALLED_TIME;
 
 public class Call {
 
     private MessageBase message;
     private ResponseCallback callback;
+    private int staleCount;
     private long sentTime;
 
     public Call(MessageBase message, ResponseCallback callback){
@@ -30,6 +31,15 @@ public class Call {
 
     public void setResponseCallback(ResponseCallback callback){
         this.callback = callback;
+    }
+
+    public int getStaleCount(){
+        return staleCount;
+    }
+
+    public void fallBack(){
+        staleCount++;
+        sentTime = System.currentTimeMillis();
     }
 
     public void setSentTime(long sentTime){

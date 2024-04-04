@@ -1,7 +1,10 @@
-package unet.dns.utils;
+package unet.dns;
 
 import unet.dns.DnsClient;
+import unet.dns.rpc.events.StalledEvent;
+import unet.dns.utils.Call;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,10 +13,12 @@ public class ResponseTracker {
 
     public static final int MAX_ACTIVE_CALLS = 512;
 
-    public static final long STALLED_TIME = 10000;
+    public static final long STALLED_TIME = 1000;
+    private DnsClient client;
     private final LinkedHashMap<Integer, Call> calls;
 
-    public ResponseTracker(){
+    public ResponseTracker(DnsClient client){
+        this.client = client;
         calls = new LinkedHashMap<>(MAX_ACTIVE_CALLS);
     }
 
@@ -54,28 +59,28 @@ public class ResponseTracker {
 
         for(Integer id : stalled){
             Call call = calls.get(id);
-            calls.remove(id);
 
-            /*
-            if(call.getStaleCount() > 1){
-                calls.remove(id);
+            System.out.println("STALLED");
 
-                /*
-                if(call.hasResponseCallback()){
-                    StalledEvent event = new StalledEvent(call.getMessage());
-                    event.setSentTime(call.getSentTime());
+            if(call.getStaleCount() < client.servers.size()){
+                System.out.println("RETRY");
+                try{
+                    call.fallBack();
+                    call.getMessage().setDestination(client.servers.get(call.getStaleCount()));
+                    client.send(call.getMessage());
 
-                    if(call.hasNode()){
-                        event.setNode(call.getNode());
-                    }
-
-                    call.getResponseCallback().onStalled(event);
+                }catch(IOException e){
                 }
-                *./
-                return;
+                continue;
             }
 
-            call.fallBack();*/
+            calls.remove(call);
+
+            StalledEvent event = new StalledEvent(call.getMessage());
+            event.setSentTime(call.getSentTime());
+
+            call.getResponseCallback().onStalled(event);
+
         }
     }
 }
