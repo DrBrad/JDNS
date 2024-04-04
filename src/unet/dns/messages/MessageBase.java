@@ -40,7 +40,7 @@ public class MessageBase {
     private ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     private boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
-    //private int length;
+    private int length = 12;
 
     private InetSocketAddress origin, destination;
 
@@ -60,26 +60,11 @@ public class MessageBase {
     }
 
     public byte[] encode(){
-        int length = 12;
-
-
-        //WE SHOULD PROBABLY GO BACK TO THE OLD METHOD OF PRE-CALCULATED LENGTH
         Map<String, Integer> r = new HashMap<>();
 
         for(DnsQuery query : queries){
             r.put(query.getQuery(), length);
-            length += query.getLength();
         }
-
-        for(DnsRecord record : answers){
-            length += record.getLength()+2;
-        }
-
-
-        //System.out.println(length);
-
-
-
 
 
         byte[] buf = new byte[length];
@@ -202,7 +187,7 @@ public class MessageBase {
             offset += ((buf[offset+8] & 0xFF) << 8) | (buf[offset+9] & 0xFF)+10;
         }
 
-        //length = offset-12;
+        length = offset;
     }
 
     private DnsRecord createRecordByType(Types type){
@@ -355,6 +340,7 @@ public class MessageBase {
 
     public void addQuery(DnsQuery query){
         queries.add(query);
+        length += query.getLength();
     }
 
     public List<DnsQuery> getQueries(){
@@ -363,6 +349,7 @@ public class MessageBase {
 
     public void addAnswer(DnsRecord record){
         answers.add(record);
+        length += record.getLength()+2;
     }
 
     public List<DnsRecord> getAnswers(){

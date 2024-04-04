@@ -27,6 +27,7 @@ public class Main {
     x CAA
     */
     //.in-addr.arpa
+    //WE NEED OBSERVER FOR RECORD CHANGES - AS LENGTH WOULD CHANGE...
 
     public static void main(String[] args)throws Exception {
         DnsServer server = new DnsServer();
