@@ -1,20 +1,30 @@
 package unet.dns;
 
+import unet.dns.messages.MessageBase;
+import unet.dns.rpc.events.ResponseEvent;
+import unet.dns.utils.Call;
+import unet.dns.utils.ResponseCallback;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DnsServer {
 
     private DatagramSocket server;
-    private List<InetSocketAddress> fallback;
+    private ResponseTracker tracker;
+    private Random random;
+    protected List<InetSocketAddress> servers;
+    private ConcurrentLinkedQueue<DatagramPacket> sendPool;
 
     public DnsServer(){
-        fallback = new ArrayList<>();
+        servers = new ArrayList<>();
+        sendPool = new ConcurrentLinkedQueue<>();
+        tracker = new ResponseTracker(this);
+        random = new Random();
     }
 
     public void start(int port)throws SocketException {
@@ -29,22 +39,25 @@ public class DnsServer {
             public void run(){
                 while(!server.isClosed()){
                     try{
-                        DatagramPacket packet = new DatagramPacket(new byte[65535], 65535);
+                        DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
                         server.receive(packet);
-
-                        if(packet != null){
-                            /*
-                            new Thread(new Runnable(){
-                                @Override
-                                public void run(){
-                                    onReceive(packet);
-                                    tracker.removeStalled();
-                                }
-                            }).start();
-                            */
-                        }
+                        sendPool.offer(packet);
                     }catch(IOException e){
                         e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+
+        new Thread(new Runnable(){
+            @Override
+            public void run(){
+                while(!server.isClosed()){
+                    tracker.removeStalled();
+
+                    DatagramPacket packet = sendPool.poll();
+                    if(packet != null){
+                        onReceive(packet);
                     }
                 }
             }
@@ -66,15 +79,65 @@ public class DnsServer {
         return server.getPort();
     }
 
-    public boolean containsFallBack(InetSocketAddress address){
-        return fallback.contains(address);
+    public void onReceive(DatagramPacket packet){
+        byte[] buf = packet.getData();
+
+        int id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
+
+        MessageBase message = new MessageBase(id);
+        message.decode(buf);
+
+        if(message.isQR()){
+            Call call = tracker.poll(id);
+
+            if(call == null){
+                throw new IllegalArgumentException("Packet is invalid");
+            }
+
+            ResponseEvent event = new ResponseEvent(message);
+            event.received();
+            event.setSentTime(call.getSentTime());
+            event.setRequest(call.getMessage());
+
+            call.getResponseCallback().onResponse(event);
+
+        }else{
+            System.out.println("REQUEST");
+        }
     }
 
-    public void addFallBack(InetSocketAddress address){
-        fallback.add(address);
+    public void send(MessageBase message)throws IOException {
+        byte[] buf = message.encode();
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, message.getDestinationAddress(), message.getDestinationPort());
+        server.send(packet);
     }
 
-    public InetSocketAddress getFallBack(int i){
-        return fallback.get(i);
+    public void send(MessageBase message, ResponseCallback callback)throws IOException {
+        if(!message.isQR()){
+            int id = random.nextInt(32767);
+            message.setID(id);
+
+            message.setDestination(servers.get(0));
+
+            tracker.add(id, new Call(message, callback));
+        }
+
+        send(message);
+    }
+
+    public boolean containsServer(InetSocketAddress address){
+        return servers.contains(address);
+    }
+
+    public void addServer(InetSocketAddress address){
+        servers.add(address);
+    }
+
+    public InetSocketAddress getServer(int i){
+        return servers.get(i);
+    }
+
+    public List<InetSocketAddress> getServers(){
+        return servers;
     }
 }

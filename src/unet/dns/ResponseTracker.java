@@ -1,6 +1,5 @@
 package unet.dns;
 
-import unet.dns.DnsClient;
 import unet.dns.rpc.events.StalledEvent;
 import unet.dns.utils.Call;
 
@@ -14,11 +13,11 @@ public class ResponseTracker {
     public static final int MAX_ACTIVE_CALLS = 512;
 
     public static final long STALLED_TIME = 1000;
-    private DnsClient client;
+    private DnsServer server;
     private final LinkedHashMap<Integer, Call> calls;
 
-    public ResponseTracker(DnsClient client){
-        this.client = client;
+    public ResponseTracker(DnsServer server){
+        this.server = server;
         calls = new LinkedHashMap<>(MAX_ACTIVE_CALLS);
     }
 
@@ -60,14 +59,11 @@ public class ResponseTracker {
         for(Integer id : stalled){
             Call call = calls.get(id);
 
-            System.out.println("STALLED");
-
-            if(call.getStaleCount() < client.servers.size()){
-                System.out.println("RETRY");
+            if(call.getStaleCount() < server.servers.size()){
                 try{
                     call.fallBack();
-                    call.getMessage().setDestination(client.servers.get(call.getStaleCount()));
-                    client.send(call.getMessage());
+                    call.getMessage().setDestination(server.servers.get(call.getStaleCount()));
+                    server.send(call.getMessage());
 
                 }catch(IOException e){
                 }

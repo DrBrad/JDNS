@@ -1,4 +1,4 @@
-package unet.dns.rpc.events;
+package unet.dns.rpc.events.inter;
 
 public class Event {
 

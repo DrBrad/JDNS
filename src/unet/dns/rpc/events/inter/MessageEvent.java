@@ -1,6 +1,7 @@
-package unet.dns.rpc.events;
+package unet.dns.rpc.events.inter;
 
 import unet.dns.messages.MessageBase;
+import unet.dns.rpc.events.inter.Event;
 
 public class MessageEvent extends Event {
 

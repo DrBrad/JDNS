@@ -1,6 +1,7 @@
 package unet.dns.rpc.events;
 
 import unet.dns.messages.MessageBase;
+import unet.dns.rpc.events.inter.MessageEvent;
 
 public class ErrorResponseEvent extends MessageEvent {
 

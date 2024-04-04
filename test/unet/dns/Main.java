@@ -4,7 +4,6 @@ import unet.dns.messages.MessageBase;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
-import unet.dns.rpc.events.MessageEvent;
 import unet.dns.rpc.events.ResponseEvent;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
@@ -30,13 +29,13 @@ public class Main {
     //.in-addr.arpa
 
     public static void main(String[] args)throws Exception {
-        DnsClient client = new DnsClient();
+        DnsServer client = new DnsServer();
         client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.4.1"), 53));
-        client.addServer(new InetSocketAddress(InetAddress.getByName("8.8.8.8"), 53));
+        client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
         client.start(8080);
 
         MessageBase request = new MessageBase();
-        request.addQuery(new DnsQuery("google.com", Types.NS, DnsClass.IN));
+        request.addQuery(new DnsQuery("one.one.one.one", Types.A, DnsClass.IN));
         client.send(request, new ResponseCallback(){
             @Override
             public void onResponse(ResponseEvent event){
