@@ -41,7 +41,7 @@ public class Main {
 
         MessageBase request = new MessageBase();
         request.addQuery(new DnsQuery("one.one.one.one", Types.A, DnsClass.IN));
-        client.send(request, new ResponseCallback(){
+        server.send(request, new ResponseCallback(){
             @Override
             public void onResponse(ResponseEvent event){
                 MessageBase response = event.getMessage();

@@ -24,27 +24,17 @@ public class DnsQuery {
         byte[] buf = new byte[getLength()];
         int offset = 0;
 
-        for(String part : query.split("\\.")){
-            byte[] addr = part.getBytes();
-            buf[offset] = (byte) addr.length;
-            System.arraycopy(addr, 0, buf, offset+1, addr.length);
-            offset += addr.length+1;
-        }
-
-        // End of domain name (null)
-        buf[offset] = 0x00;
+        byte[] addr = DomainUtils.packDomain(query);
+        System.arraycopy(addr, 0, buf, offset, addr.length);
+        offset += addr.length;
 
         // QTYPE (16 bits) - A record
-        buf[offset+1] = ((byte) (type.getCode() >> 8));
-        buf[offset+2] = ((byte) type.getCode());
+        buf[offset] = ((byte) (type.getCode() >> 8));
+        buf[offset+1] = ((byte) type.getCode());
 
         // QCLASS (16 bits) - IN class
-        buf[offset+3] = ((byte) (dnsClass.getCode() >> 8));
-        buf[offset+4] = ((byte) dnsClass.getCode());
-
-        // Truncate unused portion of the byte array
-        //byte[] truncatedFrame = new byte[offset+5];
-        //System.arraycopy(buf, 0, truncatedFrame, 0, offset+5);
+        buf[offset+2] = ((byte) (dnsClass.getCode() >> 8));
+        buf[offset+3] = ((byte) dnsClass.getCode());
 
         return buf;
     }

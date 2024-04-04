@@ -3,7 +3,7 @@ package unet.dns.utils;
 public class DomainUtils {
 
     public static byte[] packDomain(String domain){
-        byte[] buf = new byte[domain.length()];
+        byte[] buf = new byte[domain.length()+2];
 
         int offset = 0;
         for(String part : domain.split("\\.")){
