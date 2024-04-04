@@ -1,8 +1,8 @@
 package unet.dns.utils;
 
-import unet.dns.messages.DnsResponse;
+import unet.dns.messages.MessageBase;
 
 public interface ResponseCallback {
 
-    void onResponse(DnsResponse response);
+    void onResponse(MessageBase response);
 }

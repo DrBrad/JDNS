@@ -1,5 +1,7 @@
 package unet.dns.utils;
 
+import unet.dns.DnsClient;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,15 +10,11 @@ public class ResponseTracker {
 
     public static final int MAX_ACTIVE_CALLS = 512;
 
-    public static final long STALLED_TIME = 60000;
+    public static final long STALLED_TIME = 10000;
     private final LinkedHashMap<Integer, Call> calls;
-    //private final ConcurrentHashMap<ByteWrapper, RequestEvent> calls;
-    //private final ConcurrentLinkedQueue<ByteWrapper> callsOrder;
 
     public ResponseTracker(){
         calls = new LinkedHashMap<>(MAX_ACTIVE_CALLS);
-        //calls = new ConcurrentHashMap<>(MAX_ACTIVE_CALLS);
-        //callsOrder = new ConcurrentLinkedQueue<>();
     }
 
     public synchronized void add(Integer id, Call call){
@@ -59,17 +57,25 @@ public class ResponseTracker {
             calls.remove(id);
 
             /*
-            if(call.hasResponseCallback()){
-                StalledEvent event = new StalledEvent(call.getMessage());
-                event.setSentTime(call.getSentTime());
+            if(call.getStaleCount() > 1){
+                calls.remove(id);
 
-                if(call.hasNode()){
-                    event.setNode(call.getNode());
+                /*
+                if(call.hasResponseCallback()){
+                    StalledEvent event = new StalledEvent(call.getMessage());
+                    event.setSentTime(call.getSentTime());
+
+                    if(call.hasNode()){
+                        event.setNode(call.getNode());
+                    }
+
+                    call.getResponseCallback().onStalled(event);
                 }
-
-                call.getResponseCallback().onStalled(event);
+                *./
+                return;
             }
-            */
+
+            call.fallBack();*/
         }
     }
 }

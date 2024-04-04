@@ -1,7 +1,6 @@
 package unet.dns;
 
-import unet.dns.messages.DnsResponse;
-import unet.dns.messages.inter.MessageBase;
+import unet.dns.messages.MessageBase;
 import unet.dns.utils.Call;
 import unet.dns.utils.ResponseCallback;
 import unet.dns.utils.ResponseTracker;
@@ -77,34 +76,39 @@ public class DnsClient {
 
         int id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 
-        Call call = tracker.poll(id);
-        System.out.println("QR "+id);
+        MessageBase message = new MessageBase(id);
+        message.decode(buf);
 
-        if(call == null){
-            return; //THROW..
+        if(message.isQR()){
+            Call call = tracker.poll(id);
+
+            if(call == null){
+                throw new IllegalArgumentException("Packet is invalid");
+            }
+
+
+            call.getResponseCallback().onResponse(message);
+
+        }else{
+            System.out.println("REQUEST");
         }
 
-        DnsResponse response = new DnsResponse(id);
-        response.decode(buf);
-
-        call.getResponseCallback().onResponse(response);
     }
 
     public void send(MessageBase message, ResponseCallback callback)throws IOException {
         if(!message.isQR()){
             int id = random.nextInt(32767);
             message.setID(id);
+            if(message.getDestination() == null){
+                message.setDestination(servers.get(0));
+            }
+
             tracker.add(id, new Call(message, callback));
-            System.out.println(id);
         }
 
         byte[] buf = message.encode();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, servers.get(0).getAddress(), servers.get(0).getPort());
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, message.getDestinationAddress(), message.getDestinationPort());
         server.send(packet);
-
-        //
-        //STALE HANDLER ADD AND CALLBACK
-        //
     }
 
     public boolean containsServer(InetSocketAddress address){

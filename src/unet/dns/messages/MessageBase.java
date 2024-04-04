@@ -1,10 +1,15 @@
-package unet.dns.messages.inter;
+package unet.dns.messages;
 
+import unet.dns.messages.inter.OpCodes;
+import unet.dns.messages.inter.ResponseCodes;
+import unet.dns.messages.inter.Types;
 import unet.dns.records.*;
 import unet.dns.utils.DnsQuery;
 import unet.dns.records.inter.DnsRecord;
 import unet.dns.utils.DomainUtils;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,14 +33,16 @@ public class MessageBase {
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     */
 
-    protected int id;
-    protected OpCodes opCode = OpCodes.QUERY;
-    protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
+    private int id;
+    private OpCodes opCode = OpCodes.QUERY;
+    private ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
-    protected boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
-    protected int length;
+    private boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
+    private int length;
 
-    protected List<DnsQuery> queries;
+    private InetSocketAddress origin, destination;
+
+    private List<DnsQuery> queries;
     private List<DnsRecord> answers, nameServers, additionalRecords;
 
     public MessageBase(){
@@ -43,6 +50,11 @@ public class MessageBase {
         answers = new ArrayList<>();
         nameServers = new ArrayList<>();
         additionalRecords = new ArrayList<>();
+    }
+
+    public MessageBase(int id){
+        this();
+        this.id = id;
     }
 
     public byte[] encode(){
@@ -108,17 +120,13 @@ public class MessageBase {
 
         System.out.println(qdCount+"  "+anCount+"  "+nsCount+"  "+arCount);
 
-        //List<Integer> qdLocations = new ArrayList<>();
         int offset = 12;
 
         for(int i = 0; i < qdCount; i++){
             DnsQuery query = new DnsQuery();
             query.decode(buf, offset);
             queries.add(query);
-            //qdLocations.add(offset);
             offset += query.getLength();
-            //System.out.println(query);
-            //System.out.println(query);
         }
 
         for(int i = 0; i < anCount; i++){
@@ -172,10 +180,10 @@ public class MessageBase {
                 return new NSRecord();
 
             case CNAME:
-                return new CNameRecord(); //TODO - IS THIS ONLY NAME_SERVER RESPONSE...?
+                return new CNameRecord();
 
             case SOA:
-                return new SOARecord(); //TODO - IS THIS ONLY NAME_SERVER RESPONSE...?
+                return new SOARecord();
 
             case PTR:
                 return new PTRRecord();
@@ -222,6 +230,46 @@ public class MessageBase {
 
     public OpCodes getOpCode(){
         return opCode;
+    }
+
+    public InetSocketAddress getDestination(){
+        return destination;
+    }
+
+    public InetAddress getDestinationAddress(){
+        return destination.getAddress();
+    }
+
+    public int getDestinationPort(){
+        return destination.getPort();
+    }
+
+    public void setDestination(InetAddress address, int port){
+        destination = new InetSocketAddress(address, port);
+    }
+
+    public void setDestination(InetSocketAddress destination){
+        this.destination = destination;
+    }
+
+    public InetSocketAddress getOrigin(){
+        return origin;
+    }
+
+    public InetAddress getOriginAddress(){
+        return origin.getAddress();
+    }
+
+    public int getOriginPort(){
+        return origin.getPort();
+    }
+
+    public void setOrigin(InetAddress address, int port){
+        origin = new InetSocketAddress(address, port);
+    }
+
+    public void setOrigin(InetSocketAddress origin){
+        this.origin = origin;
     }
 
     public void setAuthoritative(boolean authoritative){
@@ -288,30 +336,4 @@ public class MessageBase {
     public List<DnsRecord> getAdditionalRecords(){
         return additionalRecords;
     }
-
-    /*
-    public void setAnCount(int anCount){
-        this.anCount = anCount;
-    }
-
-    public int getAnCount(){
-        return anCount;
-    }
-
-    public void setNsCount(int nsCount){
-        this.nsCount = nsCount;
-    }
-
-    public int getNsCount(){
-        return nsCount;
-    }
-
-    public void setArCount(int arCount){
-        this.arCount = arCount;
-    }
-
-    public int getArCount(){
-        return arCount;
-    }
-    */
 }

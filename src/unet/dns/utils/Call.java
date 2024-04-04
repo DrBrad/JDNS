@@ -1,6 +1,6 @@
 package unet.dns.utils;
 
-import unet.dns.messages.inter.MessageBase;
+import unet.dns.messages.MessageBase;
 
 import static unet.dns.utils.ResponseTracker.STALLED_TIME;
 
@@ -8,7 +8,7 @@ public class Call {
 
     private MessageBase message;
     private ResponseCallback callback;
-    protected long sentTime;
+    private long sentTime;
 
     public Call(MessageBase message, ResponseCallback callback){
         this.message = message;
