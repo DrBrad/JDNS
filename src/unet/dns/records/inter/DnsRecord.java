@@ -21,7 +21,20 @@ public class DnsRecord {
     }
 
     public byte[] encode(){
-        return null;
+        byte[] buf = new byte[getLength()];
+
+        buf[0] = (byte) (type.getCode() >> 8);
+        buf[1] = (byte) type.getCode();
+
+        buf[2] = (byte) (dnsClass.getCode() >> 8);
+        buf[3] = (byte) dnsClass.getCode();
+
+        buf[4] = (byte) (ttl >> 24);
+        buf[5] = (byte) (ttl >> 16);
+        buf[6] = (byte) (ttl >> 8);
+        buf[7] = (byte) ttl;
+
+        return buf;
     }
 
     public void decode(byte[] buf, int off){
@@ -31,6 +44,15 @@ public class DnsRecord {
                 ((buf[off+3] & 0xff) << 16) |
                 ((buf[off+4] & 0xff) << 8) |
                 (buf[off+5] & 0xff));
+    }
+
+    public int getLength(){
+        //2 for pointer
+        //2 for type
+        //2 for class
+        //4 for TTL
+        //2 for record length
+        return 10;
     }
 
     public void setType(Types type){

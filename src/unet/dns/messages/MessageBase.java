@@ -11,7 +11,9 @@ import unet.dns.utils.DomainUtils;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MessageBase {
 
@@ -38,7 +40,7 @@ public class MessageBase {
     private ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     private boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
-    private int length;
+    //private int length;
 
     private InetSocketAddress origin, destination;
 
@@ -58,7 +60,29 @@ public class MessageBase {
     }
 
     public byte[] encode(){
-        byte[] buf = new byte[12+length];
+        int length = 12;
+
+
+        //WE SHOULD PROBABLY GO BACK TO THE OLD METHOD OF PRE-CALCULATED LENGTH
+        Map<String, Integer> r = new HashMap<>();
+
+        for(DnsQuery query : queries){
+            r.put(query.getQuery(), length);
+            length += query.getLength();
+        }
+
+        for(DnsRecord record : answers){
+            length += record.getLength()+2;
+        }
+
+
+        System.out.println(length);
+
+
+
+
+
+        byte[] buf = new byte[length];
         buf[0] = (byte) (id >> 8); // First 8 bits
         buf[1] = (byte) id; // Second 8 bits
 
@@ -99,6 +123,21 @@ public class MessageBase {
             System.arraycopy(q, 0, buf, offset, q.length);
             offset += q.length;
         }
+
+        System.err.println(queries.size()+"  "+answers.size()+"  "+nameServers.size()+"  "+additionalRecords.size());
+        System.out.println(offset);
+
+        for(DnsRecord record : answers){
+            int pointer = r.get(record.getQuery());
+            buf[offset] = (byte) (pointer >> 8);
+            buf[offset+1] = (byte) pointer;
+
+            byte[] q = record.encode();
+            System.arraycopy(q, 0, buf, offset+2, q.length);
+
+            offset += q.length+2;
+        }
+
 
         return buf;
     }
@@ -165,7 +204,7 @@ public class MessageBase {
             offset += ((buf[offset+8] & 0xFF) << 8) | (buf[offset+9] & 0xFF)+10;
         }
 
-        length = offset-12;
+        //length = offset-12;
     }
 
     private DnsRecord createRecordByType(Types type){
@@ -317,12 +356,15 @@ public class MessageBase {
     }
 
     public void addQuery(DnsQuery query){
-        length += query.getLength();
         queries.add(query);
     }
 
     public List<DnsQuery> getQueries(){
         return queries;
+    }
+
+    public void addAnswer(DnsRecord record){
+        answers.add(record);
     }
 
     public List<DnsRecord> getAnswers(){

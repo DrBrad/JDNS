@@ -2,6 +2,9 @@ package unet.dns;
 
 import unet.dns.messages.MessageBase;
 import unet.dns.events.ResponseEvent;
+import unet.dns.messages.inter.DnsClass;
+import unet.dns.records.ARecord;
+import unet.dns.records.inter.DnsRecord;
 import unet.dns.utils.Call;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
@@ -113,6 +116,24 @@ public class DnsServer {
                     System.out.println();
                 }
 
+                MessageBase response = new MessageBase();
+                response.setID(id);
+                response.setDestination(message.getOrigin());
+                response.addQuery(message.getQueries().get(0));
+                try{
+                    response.addAnswer(new ARecord(message.getQueries().get(0).getQuery(), DnsClass.IN, 300, InetAddress.getByName("127.0.0.1")));
+                }catch(UnknownHostException e){
+                    e.printStackTrace();
+                }
+
+                try{
+                    send(response);
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+
+
+                /*
                 send(message, new ResponseCallback(){
                     @Override
                     public void onResponse(ResponseEvent event){
@@ -128,8 +149,8 @@ public class DnsServer {
                             e.printStackTrace();
                         }
                         */
-                    }
-                });
+                //    }
+                //});
 
 
             }

@@ -1,5 +1,6 @@
 package unet.dns.records;
 
+import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
 
@@ -14,9 +15,23 @@ public class ARecord extends DnsRecord {
         type = Types.A;
     }
 
+    public ARecord(String query, DnsClass dnsClass, int ttl, InetAddress address){
+        this();
+        this.query = query;
+        this.dnsClass = dnsClass;
+        this.ttl = ttl;
+        this.address = address;
+    }
+
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
+
+        byte[] addr = address.getAddress();
+        buf[8] = (byte) (addr.length >> 8);
+        buf[9] = (byte) addr.length;
+
+        System.arraycopy(addr, 0, buf, 10, addr.length);
 
         return buf;
     }
@@ -33,6 +48,11 @@ public class ARecord extends DnsRecord {
         }catch(UnknownHostException e){
             throw new IllegalArgumentException("Invalid Inet Address");
         }
+    }
+
+    @Override
+    public int getLength(){
+        return super.getLength()+address.getAddress().length;
     }
 
     public void setAddress(InetAddress address){

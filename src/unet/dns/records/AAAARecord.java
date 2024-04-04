@@ -35,6 +35,11 @@ public class AAAARecord extends DnsRecord {
         }
     }
 
+    @Override
+    public int getLength(){
+        return super.getLength()+address.getAddress().length;
+    }
+
     public void setAddress(InetAddress address){
         this.address = address;
     }
