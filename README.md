@@ -30,17 +30,17 @@ Usage
 -----
 To start the DNS server this is the usage:
 ```java
-DnsServer client = new DnsServer();
+DnsServer server = new DnsServer();
 //IF THE DOMAIN IS NOT IN OUR RECORDS USE THIS DNS SERVER
-client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
+server.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
 //FALLBACK DNS SERVER - YOU CAN ADD AS MANY AS YOU WANT
-client.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
-client.start(53);
+server.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
+server.start(53);
 ```
 
 To send a request you can do this:
 ```java
-client.send(request, new ResponseCallback(){
+server.send(request, new ResponseCallback(){
     @Override
     public void onResponse(ResponseEvent event){
         MessageBase response = event.getMessage();
