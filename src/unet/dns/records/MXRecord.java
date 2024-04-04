@@ -1,5 +1,6 @@
 package unet.dns.records;
 
+import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.utils.DomainUtils;
 import unet.dns.records.inter.DnsRecord;
@@ -13,9 +14,27 @@ public class MXRecord extends DnsRecord {
         type = Types.MX;
     }
 
+    public MXRecord(String query, DnsClass dnsClass, int ttl, int priority, String domain){
+        this();
+        this.query = query;
+        this.dnsClass = dnsClass;
+        this.ttl = ttl;
+        this.priority = priority;
+        this.domain = domain;
+    }
+
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
+
+        byte[] record = DomainUtils.packDomain(domain);
+        buf[8] = (byte) ((record.length+2) >> 8);
+        buf[9] = (byte) (record.length+2);
+
+        buf[10] = (byte) (priority >> 8);
+        buf[11] = (byte) priority;
+
+        System.arraycopy(record, 0, buf, 12, record.length);
 
         return buf;
     }
@@ -26,6 +45,11 @@ public class MXRecord extends DnsRecord {
 
         priority = ((buf[off+8] & 0xFF) << 8) | (buf[off+9] & 0xFF);
         domain = DomainUtils.unpackDomain(buf, off+10);
+    }
+
+    @Override
+    public int getLength(){
+        return super.getLength()+domain.length()+4;
     }
 
     public void setPriority(int priority){

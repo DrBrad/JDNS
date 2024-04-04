@@ -1,5 +1,6 @@
 package unet.dns.records;
 
+import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
 import unet.dns.utils.DomainUtils;
@@ -12,9 +13,23 @@ public class NSRecord extends DnsRecord {
         type = Types.NS;
     }
 
+    public NSRecord(String query, DnsClass dnsClass, int ttl, String domain){
+        this();
+        this.query = query;
+        this.dnsClass = dnsClass;
+        this.ttl = ttl;
+        this.domain = domain;
+    }
+
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
+
+        byte[] record = DomainUtils.packDomain(domain);
+        buf[8] = (byte) (record.length >> 8);
+        buf[9] = (byte) record.length;
+
+        System.arraycopy(record, 0, buf, 10, record.length);
 
         return buf;
     }
@@ -24,6 +39,11 @@ public class NSRecord extends DnsRecord {
         super.decode(buf, off);
 
         domain = DomainUtils.unpackDomain(buf, off+8);
+    }
+
+    @Override
+    public int getLength(){
+        return super.getLength()+domain.length()+2;
     }
 
     public void setDomain(String domain){

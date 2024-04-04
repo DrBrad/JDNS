@@ -4,6 +4,9 @@ import unet.dns.messages.MessageBase;
 import unet.dns.events.ResponseEvent;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.records.ARecord;
+import unet.dns.records.CNameRecord;
+import unet.dns.records.MXRecord;
+import unet.dns.records.TXTRecord;
 import unet.dns.records.inter.DnsRecord;
 import unet.dns.utils.Call;
 import unet.dns.utils.DnsQuery;
@@ -122,8 +125,13 @@ public class DnsServer {
                 response.setDestination(message.getOrigin());
                 response.addQuery(message.getQueries().get(0));
                 try{
-                    response.addAnswer(new ARecord(message.getQueries().get(0).getQuery(), DnsClass.IN, 300, InetAddress.getByName("127.0.0.1")));
-                }catch(UnknownHostException e){
+                    //response.addAnswer(new ARecord(message.getQueries().get(0).getQuery(), DnsClass.IN, 300, InetAddress.getByName("127.0.0.1")));
+                    //response.addAnswer(new MXRecord(message.getQueries().get(0).getQuery(), DnsClass.IN, 300, 10, "hello.com"));
+
+                    //response.addAnswer(new CNameRecord(message.getQueries().get(0).getQuery(), DnsClass.IN, 300, "hello.com"));
+                    response.addAnswer(new TXTRecord(message.getQueries().get(0).getQuery(), DnsClass.IN, 300, "THIS IS A TEST"));
+
+                }catch(Exception e){
                     e.printStackTrace();
                 }
 

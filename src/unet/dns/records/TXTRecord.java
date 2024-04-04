@@ -1,5 +1,6 @@
 package unet.dns.records;
 
+import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
 
@@ -14,9 +15,23 @@ public class TXTRecord extends DnsRecord {
         type = Types.TXT;
     }
 
+    public TXTRecord(String query, DnsClass dnsClass, int ttl, String record){
+        this();
+        this.query = query;
+        this.dnsClass = dnsClass;
+        this.ttl = ttl;
+        this.record = record;
+    }
+
     @Override
     public byte[] encode(){
         byte[] buf = super.encode();
+
+        byte[] rec = record.getBytes();
+        buf[8] = (byte) (rec.length >> 8);
+        buf[9] = (byte) rec.length;
+
+        System.arraycopy(rec, 0, buf, 10, rec.length);
 
         return buf;
     }
@@ -26,6 +41,11 @@ public class TXTRecord extends DnsRecord {
         super.decode(buf, off);
 
         this.record = new String(buf, off+8, ((buf[off+6] & 0xFF) << 8) | (buf[off+7] & 0xFF));
+    }
+
+    @Override
+    public int getLength(){
+        return super.getLength()+record.length();
     }
 
     public void setRecord(String record){

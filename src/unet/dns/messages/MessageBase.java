@@ -76,7 +76,7 @@ public class MessageBase {
         }
 
 
-        System.out.println(length);
+        //System.out.println(length);
 
 
 
@@ -125,7 +125,6 @@ public class MessageBase {
         }
 
         System.err.println(queries.size()+"  "+answers.size()+"  "+nameServers.size()+"  "+additionalRecords.size());
-        System.out.println(offset);
 
         for(DnsRecord record : answers){
             int pointer = r.get(record.getQuery());
@@ -137,7 +136,6 @@ public class MessageBase {
 
             offset += q.length+2;
         }
-
 
         return buf;
     }
