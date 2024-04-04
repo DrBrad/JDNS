@@ -3,13 +3,18 @@ package unet.dns;
 import unet.dns.messages.MessageBase;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
+import unet.dns.records.ARecord;
+import unet.dns.records.MXRecord;
+import unet.dns.records.TXTRecord;
 import unet.dns.records.inter.DnsRecord;
 import unet.dns.events.ResponseEvent;
+import unet.dns.store.RecordStore;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public class Main {
 
@@ -30,9 +35,18 @@ public class Main {
     //WE NEED OBSERVER FOR RECORD CHANGES - AS LENGTH WOULD CHANGE...
 
     public static void main(String[] args)throws Exception {
+
         DnsServer server = new DnsServer();
         server.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
         server.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
+
+        server.getRecordStore().addRecord(new ARecord("google.com", DnsClass.IN, 300, InetAddress.getByName("1.1.1.1")));
+        server.getRecordStore().addRecord(new TXTRecord("distributed.unet", DnsClass.IN, 300, "NULL"));
+        server.getRecordStore().addRecord(new MXRecord("distributed.unet", DnsClass.IN, 300, 10, "google.com"));
+        server.getRecordStore().addRecord(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.1")));
+        server.getRecordStore().addRecord(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.2")));
+        server.getRecordStore().addRecord(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.3")));
+
         server.start(5053);
 
 
@@ -41,7 +55,8 @@ public class Main {
         client.start(8080);
 
         MessageBase request = new MessageBase();
-        request.addQuery(new DnsQuery("one.one.one.one", Types.A, DnsClass.IN));
+        request.addQuery(new DnsQuery("distributed.unet", Types.TXT, DnsClass.IN));
+        //request.addQuery(new DnsQuery("one.one.one.one", Types.A, DnsClass.IN));
         client.send(request, new ResponseCallback(){
             @Override
             public void onResponse(ResponseEvent event){

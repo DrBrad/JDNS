@@ -8,6 +8,7 @@ import unet.dns.records.CNameRecord;
 import unet.dns.records.MXRecord;
 import unet.dns.records.TXTRecord;
 import unet.dns.records.inter.DnsRecord;
+import unet.dns.store.RecordStore;
 import unet.dns.utils.Call;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
@@ -22,12 +23,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DnsServer {
 
     private DatagramSocket server;
+    private RecordStore store;
     private ResponseTracker tracker;
     private Random random;
     protected List<InetSocketAddress> servers;
     private ConcurrentLinkedQueue<DatagramPacket> sendPool;
 
     public DnsServer(){
+        store = new RecordStore();
         servers = new ArrayList<>();
         sendPool = new ConcurrentLinkedQueue<>();
         tracker = new ResponseTracker(this);
@@ -114,11 +117,35 @@ public class DnsServer {
                 System.out.println("REQUEST");
 
 
+                MessageBase response = new MessageBase();
+                response.setID(id);
+                response.setQR(true);
+                response.setDestination(message.getOrigin());
+                //response.addQuery(message.getQueries().get(0));
+
+                for(DnsQuery query : message.getQueries()){
+                    if(store.hasAnswers(query)){
+                        response.addQuery(query);
+
+                        for(DnsRecord record : store.getRecord(query)){
+                            response.addAnswer(record);
+                        }
+                    }
+                }
+
+                try{
+                    send(response);
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+
+
                 //for(DnsQuery q : message.getQueries()){
                 //    System.out.println(q);
                 //    System.out.println();
                 //}
 
+                /*
                 MessageBase response = new MessageBase();
                 response.setID(id);
                 response.setQR(true);
@@ -185,6 +212,10 @@ public class DnsServer {
         }
 
         send(message);
+    }
+
+    public RecordStore getRecordStore(){
+        return store;
     }
 
     public boolean containsServer(InetSocketAddress address){
