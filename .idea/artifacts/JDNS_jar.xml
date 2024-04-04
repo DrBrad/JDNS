@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="JDNS:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/JDNS_jar</output-path>
+    <root id="archive" name="JDNS.jar">
+      <element id="module-output" name="JDNS" />
+    </root>
+  </artifact>
+</component>
