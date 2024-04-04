@@ -1,6 +1,6 @@
 package unet.dns;
 
-import unet.dns.rpc.events.StalledEvent;
+import unet.dns.events.StalledEvent;
 import unet.dns.utils.Call;
 
 import java.io.IOException;

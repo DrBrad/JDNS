@@ -1,8 +1,8 @@
 package unet.dns.utils;
 
-import unet.dns.rpc.events.ErrorResponseEvent;
-import unet.dns.rpc.events.ResponseEvent;
-import unet.dns.rpc.events.StalledEvent;
+import unet.dns.events.ErrorResponseEvent;
+import unet.dns.events.ResponseEvent;
+import unet.dns.events.StalledEvent;
 
 public abstract class ResponseCallback {
 

@@ -4,7 +4,7 @@ import unet.dns.messages.MessageBase;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 import unet.dns.records.inter.DnsRecord;
-import unet.dns.rpc.events.ResponseEvent;
+import unet.dns.events.ResponseEvent;
 import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
 

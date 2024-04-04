@@ -1,7 +1,7 @@
 package unet.dns;
 
 import unet.dns.messages.MessageBase;
-import unet.dns.rpc.events.ResponseEvent;
+import unet.dns.events.ResponseEvent;
 import unet.dns.utils.Call;
 import unet.dns.utils.ResponseCallback;
 
