@@ -2,7 +2,6 @@ package unet.dns;
 
 import unet.dns.messages.MessageBase;
 import unet.dns.rpc.events.ResponseEvent;
-import unet.dns.rpc.events.StalledEvent;
 import unet.dns.utils.Call;
 import unet.dns.utils.ResponseCallback;
 
@@ -11,6 +10,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DnsClient {
 
@@ -18,9 +18,11 @@ public class DnsClient {
     private ResponseTracker tracker;
     private Random random;
     protected List<InetSocketAddress> servers;
+    private ConcurrentLinkedQueue<DatagramPacket> sendPool;
 
     public DnsClient(){
         servers = new ArrayList<>();
+        sendPool = new ConcurrentLinkedQueue<>();
         tracker = new ResponseTracker(this);
         random = new Random();
     }
@@ -36,7 +38,13 @@ public class DnsClient {
             @Override
             public void run(){
                 while(!server.isClosed()){
-                    tracker.removeStalled();
+                    try{
+                        DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+                        server.receive(packet);
+                        sendPool.offer(packet);
+                    }catch(IOException e){
+                        e.printStackTrace();
+                    }
                 }
             }
         }).start();
@@ -45,20 +53,11 @@ public class DnsClient {
             @Override
             public void run(){
                 while(!server.isClosed()){
-                    try{
-                        DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
-                        server.receive(packet);
+                    tracker.removeStalled();
 
-                        if(packet != null){
-                            new Thread(new Runnable(){
-                                @Override
-                                public void run(){
-                                    onReceive(packet);
-                                }
-                            }).start();
-                        }
-                    }catch(IOException e){
-                        e.printStackTrace();
+                    DatagramPacket packet = sendPool.poll();
+                    if(packet != null){
+                        onReceive(packet);
                     }
                 }
             }
