@@ -60,13 +60,6 @@ public class MessageBase {
     }
 
     public byte[] encode(){
-        Map<String, Integer> r = new HashMap<>();
-
-        for(DnsQuery query : queries){
-            r.put(query.getQuery(), length);
-        }
-
-
         byte[] buf = new byte[length];
         buf[0] = (byte) (id >> 8); // First 8 bits
         buf[1] = (byte) id; // Second 8 bits
@@ -101,18 +94,20 @@ public class MessageBase {
         buf[10] = (byte) (additionalRecords.size() >> 8);
         buf[11] = (byte) additionalRecords.size();
 
+        Map<String, Integer> queryMap = new HashMap<>();
         int offset = 12;
 
         for(DnsQuery query : queries){
             byte[] q = query.encode();
             System.arraycopy(q, 0, buf, offset, q.length);
+            queryMap.put(query.getQuery(), offset);
             offset += q.length;
         }
 
         System.err.println(queries.size()+"  "+answers.size()+"  "+nameServers.size()+"  "+additionalRecords.size());
 
         for(DnsRecord record : answers){
-            int pointer = r.get(record.getQuery());
+            int pointer = queryMap.get(record.getQuery());
             buf[offset] = (byte) (pointer >> 8);
             buf[offset+1] = (byte) pointer;
 
