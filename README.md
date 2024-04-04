@@ -31,8 +31,10 @@ Usage
 To start the DNS server this is the usage:
 ```java
 DnsServer client = new DnsServer();
-client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53)); //IF THE DOMAIN IS NOT IN OUR RECORDS USE THIS DNS SERVER
-client.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53)); //FALLBACK DNS SERVER - YOU CAN ADD AS MANY AS YOU WANT
+//IF THE DOMAIN IS NOT IN OUR RECORDS USE THIS DNS SERVER
+client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
+//FALLBACK DNS SERVER - YOU CAN ADD AS MANY AS YOU WANT
+client.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
 client.start(53);
 ```
 
