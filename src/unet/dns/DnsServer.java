@@ -111,13 +111,14 @@ public class DnsServer {
                 System.out.println("REQUEST");
 
 
-                for(DnsQuery q : message.getQueries()){
-                    System.out.println(q);
-                    System.out.println();
-                }
+                //for(DnsQuery q : message.getQueries()){
+                //    System.out.println(q);
+                //    System.out.println();
+                //}
 
                 MessageBase response = new MessageBase();
                 response.setID(id);
+                response.setQR(true);
                 response.setDestination(message.getOrigin());
                 response.addQuery(message.getQueries().get(0));
                 try{
