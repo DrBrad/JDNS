@@ -29,9 +29,14 @@ public class Main {
     //.in-addr.arpa
 
     public static void main(String[] args)throws Exception {
+        DnsServer server = new DnsServer();
+        server.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
+        server.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
+        server.start(5053);
+
+
         DnsServer client = new DnsServer();
-        client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.4.1"), 53));
-        client.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
+        client.addServer(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 5053));
         client.start(8080);
 
         MessageBase request = new MessageBase();

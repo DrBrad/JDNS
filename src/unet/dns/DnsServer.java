@@ -3,6 +3,7 @@ package unet.dns;
 import unet.dns.messages.MessageBase;
 import unet.dns.events.ResponseEvent;
 import unet.dns.utils.Call;
+import unet.dns.utils.DnsQuery;
 import unet.dns.utils.ResponseCallback;
 
 import java.io.IOException;
@@ -86,23 +87,51 @@ public class DnsServer {
 
         MessageBase message = new MessageBase(id);
         message.decode(buf);
+        message.setOrigin(packet.getAddress(), packet.getPort());
 
-        if(message.isQR()){
-            Call call = tracker.poll(id);
+        try{
+            if(message.isQR()){
+                Call call = tracker.poll(id);
 
-            if(call == null){
-                throw new IllegalArgumentException("Packet is invalid");
+                if(call == null){
+                    throw new IOException("Packet is invalid");
+                }
+
+                ResponseEvent event = new ResponseEvent(message);
+                event.received();
+                event.setSentTime(call.getSentTime());
+                event.setRequest(call.getMessage());
+
+                call.getResponseCallback().onResponse(event);
+
+            }else{
+                System.out.println("REQUEST");
+
+
+                for(DnsQuery q : message.getQueries()){
+                    System.out.println(q);
+                    System.out.println();
+                }
+
+                send(message, new ResponseCallback(){
+                    @Override
+                    public void onResponse(ResponseEvent event){
+                        MessageBase response = event.getMessage();
+                        response.setID(id);
+                        response.setDestination(message.getOrigin());
+
+                        try{
+                            send(response);
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+
             }
-
-            ResponseEvent event = new ResponseEvent(message);
-            event.received();
-            event.setSentTime(call.getSentTime());
-            event.setRequest(call.getMessage());
-
-            call.getResponseCallback().onResponse(event);
-
-        }else{
-            System.out.println("REQUEST");
+        }catch(IOException e){
+            e.printStackTrace();
         }
     }
 

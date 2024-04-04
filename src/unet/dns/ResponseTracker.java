@@ -58,10 +58,10 @@ public class ResponseTracker {
 
         for(Integer id : stalled){
             Call call = calls.get(id);
+            call.fallBack();
 
             if(call.getStaleCount() < server.servers.size()){
                 try{
-                    call.fallBack();
                     call.getMessage().setDestination(server.servers.get(call.getStaleCount()));
                     server.send(call.getMessage());
 
