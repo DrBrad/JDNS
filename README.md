@@ -36,6 +36,9 @@ server.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
 //FALLBACK DNS SERVER - YOU CAN ADD AS MANY AS YOU WANT
 server.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
 server.start(53);
+
+//TO ADD RECORD
+server.getRecordStore().add(new ARecord("google.com", DnsClass.IN, 300, InetAddress.getByName("127.0.0.1")));
 ```
 
 To send a request you can do this:
