@@ -128,6 +128,10 @@ public class DnsServer {
                     if(store.hasAnswers(query)){
                         response.addQuery(query);
 
+                        if(!store.hasAnswers(query)){
+                            continue;
+                        }
+
                         for(DnsRecord record : store.get(query)){
                             if(record.getDnsClass() != query.getDnsClass() ||
                                     record.getType() != query.getType()){
