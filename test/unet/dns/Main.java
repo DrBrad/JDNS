@@ -55,7 +55,47 @@ public class Main {
         client.start(8080);
 
         MessageBase request = new MessageBase();
-        request.addQuery(new DnsQuery("distributed.unet", Types.TXT, DnsClass.IN));
+        request.addQuery(new DnsQuery("distributed.unet", Types.A, DnsClass.IN));
+        //request.addQuery(new DnsQuery("one.one.one.one", Types.A, DnsClass.IN));
+        client.send(request, new ResponseCallback(){
+            @Override
+            public void onResponse(ResponseEvent event){
+                MessageBase response = event.getMessage();
+                System.out.println("Z: "+response.getResponseCode());
+                System.out.println(response.isAuthoritative());
+                //System.out.println(response.getResponseCode());
+                //System.out.println("QUERIES");
+                System.out.println();
+                for(DnsQuery q : response.getQueries()){
+                    System.out.println(q);
+                    System.out.println();
+                }
+
+                //System.out.println();
+                //System.out.println("ANSWERS");
+                //System.out.println();
+
+                for(DnsRecord record : response.getAnswers()){
+                    System.out.println(record);
+                    System.out.println();
+                }
+
+                //System.out.println();
+                //System.out.println("NAME SERVERS");
+                //System.out.println();
+
+                for(DnsRecord record : response.getNameServers()){
+                    System.out.println(record);
+                    System.out.println(record.getQuery());
+                    System.out.println();
+                }
+            }
+        });
+
+
+
+        request = new MessageBase();
+        request.addQuery(new DnsQuery("google.com", Types.A, DnsClass.IN));
         //request.addQuery(new DnsQuery("one.one.one.one", Types.A, DnsClass.IN));
         client.send(request, new ResponseCallback(){
             @Override

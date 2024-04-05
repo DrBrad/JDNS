@@ -122,6 +122,7 @@ public class DnsServer {
                 response.setQR(true);
                 response.setDestination(message.getOrigin());
                 //response.addQuery(message.getQueries().get(0));
+                int answers = 0;
 
                 for(DnsQuery query : message.getQueries()){
                     if(store.hasAnswers(query)){
@@ -133,15 +134,39 @@ public class DnsServer {
                                 continue;
                             }
                             response.addAnswer(record);
+                            answers++;
                         }
                     }
                 }
 
-                try{
-                    send(response);
-                }catch(IOException e){
-                    e.printStackTrace();
+                if(answers > 0){
+                    try{
+                        send(response);
+                    }catch(IOException e){
+                        e.printStackTrace();
+                    }
+
+                    return;
                 }
+
+
+                send(message, new ResponseCallback(){
+                    @Override
+                    public void onResponse(ResponseEvent event){
+                        MessageBase response = event.getMessage();
+                        System.out.println(response.getQueries().size());
+                        response.setID(id);
+                        response.setDestination(message.getOrigin());
+
+                        try{
+                            send(response);
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+
 
 
                 //for(DnsQuery q : message.getQueries()){
