@@ -191,7 +191,7 @@ public class MessageBase {
                 return new ARecord();
 
             case AAAA:
-                return new ARecord();
+                return new AAAARecord();
 
             case NS:
                 return new NSRecord();
