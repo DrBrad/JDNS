@@ -3,8 +3,6 @@ package unet.dns.utils;
 import unet.dns.messages.inter.DnsClass;
 import unet.dns.messages.inter.Types;
 
-import static unet.dns.utils.DomainUtils.unpackDomain;
-
 public class DnsQuery {
 
     private String query;
@@ -40,7 +38,7 @@ public class DnsQuery {
     }
 
     public void decode(byte[] buf, int off){
-        query = unpackDomain(buf, off);
+        query = DomainUtils.unpackDomain(buf, off);
         off += query.length()+2;
 
         type = Types.getTypeFromCode(((buf[off] & 0xFF) << 8) | (buf[off+1] & 0xFF));
