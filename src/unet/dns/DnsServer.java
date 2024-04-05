@@ -127,7 +127,11 @@ public class DnsServer {
                     if(store.hasAnswers(query)){
                         response.addQuery(query);
 
-                        for(DnsRecord record : store.getRecord(query)){
+                        for(DnsRecord record : store.get(query)){
+                            if(record.getDnsClass() != query.getDnsClass() ||
+                                    record.getType() != query.getType()){
+                                continue;
+                            }
                             response.addAnswer(record);
                         }
                     }

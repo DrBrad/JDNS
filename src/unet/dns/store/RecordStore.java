@@ -23,14 +23,38 @@ public class RecordStore {
 
     IP
     - Domain
+
+    QUERY    CLASS    TYPE    DOMAIN    TTL
+
+
     */
-    private Map<String, Map<Types, List<DnsRecord>>> domains;//, inverse;
+    private Map<String, List<DnsRecord>> store;
+    //private Map<String, Map<Types, List<DnsRecord>>> domains;//, inverse;
 
     public RecordStore(){
-        domains = new HashMap<>();
+        store = new HashMap<>();
         //inverse = new ArrayList<>();
     }
 
+    public void add(DnsRecord record){
+        if(store.containsKey(record.getQuery())){
+            store.get(record.getQuery()).add(record);
+            return;
+        }
+
+        List<DnsRecord> records = new ArrayList<>();
+        records.add(record);
+        store.put(record.getQuery(), records);
+    }
+
+    public List<DnsRecord> get(DnsQuery query){
+        return store.get(query.getQuery());
+    }
+
+    public boolean hasAnswers(DnsQuery query){
+        return store.containsKey(query.getQuery());
+    }
+    /*
     public void addRecord(DnsRecord record){
         if(domains.containsKey(record.getQuery())){
             if(domains.get(record.getQuery()).containsKey(record.getType())){
@@ -69,4 +93,5 @@ public class RecordStore {
 
         return false;
     }
+    */
 }

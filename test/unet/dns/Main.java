@@ -40,12 +40,12 @@ public class Main {
         server.addServer(new InetSocketAddress(InetAddress.getByName("1.1.1.1"), 53));
         server.addServer(new InetSocketAddress(InetAddress.getByName("1.0.1.0"), 53));
 
-        server.getRecordStore().addRecord(new ARecord("google.com", DnsClass.IN, 300, InetAddress.getByName("1.1.1.1")));
-        server.getRecordStore().addRecord(new TXTRecord("distributed.unet", DnsClass.IN, 300, "NULL"));
-        server.getRecordStore().addRecord(new MXRecord("distributed.unet", DnsClass.IN, 300, 10, "google.com"));
-        server.getRecordStore().addRecord(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.1")));
-        server.getRecordStore().addRecord(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.2")));
-        server.getRecordStore().addRecord(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.3")));
+        server.getRecordStore().add(new ARecord("google.com", DnsClass.IN, 300, InetAddress.getByName("1.1.1.1")));
+        server.getRecordStore().add(new TXTRecord("distributed.unet", DnsClass.IN, 300, "NULL"));
+        server.getRecordStore().add(new MXRecord("distributed.unet", DnsClass.IN, 300, 10, "google.com"));
+        server.getRecordStore().add(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.1")));
+        server.getRecordStore().add(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.2")));
+        server.getRecordStore().add(new ARecord("distributed.unet", DnsClass.IN, 300, InetAddress.getByName("1.1.1.3")));
 
         server.start(5053);
 
